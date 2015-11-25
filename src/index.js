@@ -31,7 +31,13 @@ exports.actions = defineActions({
   create: function() {
     return {__resolve: "create"};
   },
+  post: function() {
+    return {__resolve: "create"};
+  },
   update: function() {
+    return {__resolve: "update"};
+  },
+  put: function() {
     return {__resolve: "update"};
   },
   delete: function() {
