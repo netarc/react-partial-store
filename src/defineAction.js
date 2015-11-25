@@ -1,11 +1,35 @@
 var _ = require("./utils")
   , MixinResolvable = require("./MixinResolvable");
 
+
 /**
  * An Action just wraps a method, any arguments passed when calling an action
  * are just appending into the results.
  */
-var defineAction = function(outerCallback, outerContext) {
+var defineAction = function() {
+  var args = [].slice.call(arguments)
+    , definition = args.pop()
+    , callback = args.pop();
+
+  if (_.isFunction(definition)) {
+    var tmp = callback;
+    callback = definition;
+    definition = tmp;
+  }
+
+  if (callback && !_.isFunction(callback)) {
+    throw new TypeError(
+      "defineAction: You're attempting to pass multiple callbacks when only a single callback and/or " +
+      "options is acceptable"
+    );
+  }
+
+  if (definition && !_.isPlainObject(definition)) {
+    throw new TypeError(
+      "defineAction: Only accepts a callback method and/or options but found type `" + typeof(definition) + "`"
+    );
+  }
+
   var action = function() {
     var stack = [].concat(action.getResolvable(), [].slice.call(arguments));
 
@@ -18,7 +42,16 @@ var defineAction = function(outerCallback, outerContext) {
   _.extendFunction(action, MixinResolvable);
 
   action.getResolvable = function() {
-    return outerCallback.call(outerContext || this);
+    var result = [].concat(callback && callback() || []);
+
+    if (definition) {
+      result.unshift({
+        __definition: definition,
+        __type: "action"
+      });
+    }
+
+    return result;
   }
 
   /**
@@ -29,8 +62,8 @@ var defineAction = function(outerCallback, outerContext) {
    * The hook action can actually be a definition object instead which is just
    * concatenated into the stack chain.
    */
-  action.hook = function(inner, innerContext) {
-    var hook = defineAction(inner, innerContext);
+  action.hook = function() {
+    var hook = defineAction.apply(null, arguments);
     hook.parent = action;
     return hook
   }
@@ -39,17 +72,17 @@ var defineAction = function(outerCallback, outerContext) {
    * Wrap will execute our new inner (local outer) Action and pass its result
    * chain to our new outer Action.
    */
-  action.wrap = function(innerCallback, innerContext) {
+  action.wrap = function(outerCallback, context) {
     var wrapped = defineAction(function() {
-      var context = innerContext || this
-        , result = outerCallback.apply(context)
+      var context = context || this
+        , result = action.resolve()
         , stack = [].concat(result, [].slice.call(arguments));
 
-      return innerCallback.call(context, stack);
-    }, innerContext);
+      return outerCallback(stack);
+    });
 
     wrapped.resolve = function(stack) {
-      stack = [].concat(wrapped.getResolvable.call(innerContext || this), stack || []);
+      stack = [].concat(wrapped.getResolvable.call(context || this), stack || []);
       return wrapped.parent ? wrapped.parent.resolve(stack) : stack;
     }
 

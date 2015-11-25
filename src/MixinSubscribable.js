@@ -1,5 +1,6 @@
 var _ = require('./utils');
 
+
 module.exports = {
   initialize: function() {
     this.emitter = new _.EventEmitter();

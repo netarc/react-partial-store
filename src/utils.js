@@ -7,6 +7,7 @@ var objToString = Object.prototype.toString
   , each
   , deepCopy;
 
+
 var keysFunc = Object.keys || function(obj) {
   if (typeof(obj) !== "object")
     return [];

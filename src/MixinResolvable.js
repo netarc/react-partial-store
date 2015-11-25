@@ -1,5 +1,6 @@
 var _ = require('./utils');
 
+
 var unfoldStack = function(stack) {
   for (var i = 0; i < stack.length; i++) {
     var definition = stack[i].__definition;
@@ -10,9 +11,16 @@ var unfoldStack = function(stack) {
       stack.splice(i, 1);
 
       for (var l = 0; l < definition.length; l++) {
-        var substack = unfoldStack(definition[l].resolve());
-        [].splice.apply(stack, [].concat(i, 0, substack));
-        i+= substack.length;
+        var innerDefinition = definition[l];
+        if (innerDefinition.resolve && innerDefinition.getResolvable) {
+          var substack = unfoldStack(innerDefinition.resolve());
+          [].splice.apply(stack, [].concat(i, 0, substack));
+          i+= substack.length;
+        }
+        else {
+          stack.splice(i, 0, innerDefinition);
+          i++;
+        }
       }
       i--;
     }

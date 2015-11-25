@@ -65,6 +65,10 @@ var createMixinDatasetAccessor = function(dataset, datasetKey) {
 
         wrapped.__resolveInvoker = function(stack) {
           var promise = StackInvoker.invoke(stack);
+
+          if (!promise.then)
+            return promise;
+
           promise.then(undefined, function(response) {
             // TODO: Pending json format spec
             if (_.isPlainObject(response.data)) {

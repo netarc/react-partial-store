@@ -8,6 +8,7 @@ var axios = require("axios")
   , FragmentMap = require("./FragmentMap")
   , Exports = {};
 
+
 Promise.prototype._onerror = function(err) {
   if (Object.prototype.toString.call(err) == "[object Error]") {
     console.assert(false, err);
@@ -85,7 +86,7 @@ var Store = _.defineClass(MixinResolvable, MixinSubscribable, {
   },
 
   createDataset: function() {
-    var dataset = RPS.createDataset.apply(null, [].slice.call(arguments));
+    var dataset = RPS.createDataset.apply(null, arguments);
     dataset.parent = this;
     return dataset;
   },

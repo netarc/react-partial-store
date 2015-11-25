@@ -94,7 +94,7 @@ var Dataset = _.defineClass(MixinResolvable, {
   },
 
   createDataset: function() {
-    var dataset = RPS.createDataset.apply(null, [].slice.call(arguments));
+    var dataset = RPS.createDataset.apply(null, arguments);
     dataset.parent = this;
     return dataset;
   },

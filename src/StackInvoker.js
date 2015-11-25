@@ -16,6 +16,7 @@ var axios = require("axios")
   , ACTION_SAVE = Constants.action.save
   , ACTION_DELETE = Constants.action.delete;
 
+
 var composeURI = function(uri, params, paramMap) {
   var pieces = uri.split('/');
 
@@ -251,14 +252,10 @@ StackInvoker.Resolvers = Resolvers = {
 StackInvoker.invoke = function(stack) {
   var resolveAction = null;
 
-  // Ideally it would be nice if our resolve declaration was at the end of the
-  // chain, but action hooks chains start from the front in order to keep the
-  // rear-to-front priority.
+  // Consume all resolve actions and settle on our final one
   for (var i = 0; i < stack.length; i++) {
-    if (resolveAction = stack[i].__resolve) {
+    if (resolveAction = stack[i].__resolve)
       stack.splice(i, 1);
-      break;
-    }
   }
 
   console.groupCollapsed("StackInvoker::invoke %c%s", 'font-weight:normal;', resolveAction || "{descriptor}");
