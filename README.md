@@ -365,19 +365,35 @@ And it will rely on the server denoting any partial existence when data is retur
 
 ### Embedding data on the page load
 
-There are times it's convenient to preload data on an actual page-load. To support this you can make use of the `RPS.prefetchCache` object and directly put any preloaded data by Store `type` name into that object. That data will be checked before any request is made out to the server.
+There are times it's convenient to preload data on an actual page-load. To support this you can make use of the `RPS.prefetchCache` toolset and directly put any preloaded data by Store `type` name into cache by using its `.setEntries` or `.setQueries` function. That data will be checked before any request is made out to the server.
 
 An example usage can be seen below in an example of a script at the start of the App. Of course this generally is populated from a JSON/Script embed from the html template and can be easily used in those scenarios as well.
 
+An array of objects each with explicit collection type:
+
 ```
-RPS.prefetchCache.projects = [
+RPS.prefetchCache.setEntries([
+  {
+    _partial: "minimal",
+    _type: "projects",
+    id: 1,
+    title: "The Big Bad Wolf"
+  },
+  ...
+]);
+```
+
+An array of objects with explicit passed type:
+
+```
+RPS.prefetchCache.setEntries("projects", [
   {
     _partial: "minimal",
     id: 1,
     title: "The Big Bad Wolf"
   },
   ...
-];
+]);
 ```
 
 ### Relational data cross filling

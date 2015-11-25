@@ -1,5 +1,6 @@
 var RPS = require('./index')
   , _ = require('./utils')
+  , rawPrefetchCache = require('./prefetchCache').raw
   , Constants = require('./Constants')
   , ACTION_DELETE = Constants.action.delete
   , ACTION_FETCH = Constants.action.fetch
@@ -12,6 +13,7 @@ var RPS = require('./index')
   , STATUS_SUCCESS = Constants.status.SUCCESS
   , TIMESTAMP_LOADING = Constants.timestamp.loading
   , TIMESTAMP_STALE = Constants.timestamp.stale;
+
 
 /**
  * FragmentMap manages a collection of queries and mutators for a unique model
@@ -47,6 +49,12 @@ var FragmentMap = _.defineClass({
         _.extend(result, resource);
 
       if (!result.data) {
+        // 1 - Use cache from our prefetch first
+        if (resourceDescriptor.type) {
+          result.data = rawPrefetchCache.entries[resourceDescriptor.type];
+        }
+
+        // 2 - Fall back to newer fragments if we have them in addition to any prefetch
         // Create a new list of fragments with our global default being last at highest priority.
         var fragments = [].concat(resourceDescriptor.fragments, FRAGMENT_DEFUALT);
 
@@ -65,6 +73,18 @@ var FragmentMap = _.defineClass({
     }
     else {
       var query = fragment.queries[resourceDescriptor.path];
+
+      // Use cache from our prefetch first
+      if (!query) {
+        var queryCache = rawPrefetchCache.queries[resourceDescriptor.path];
+        if (queryCache) {
+          query = {
+            data: rawPrefetchCache.queries[resourceDescriptor.path],
+            status: STATUS_SUCCESS,
+            timestamp: Date.now()
+          };
+        }
+      }
 
       if (query) {
         // Found a colleciton query?
@@ -113,7 +133,7 @@ var FragmentMap = _.defineClass({
   update: function(resourceDescriptor, action, response, status) {
     console.groupCollapsed("fragment::update");
     var fragment = this._getFragment(resourceDescriptor.partial || FRAGMENT_DEFAULT)
-      , resourcePath = resourcePath
+      , resourcePath = resourceDescriptor.path
       , result = {};
 
     result = {

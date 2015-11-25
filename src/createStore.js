@@ -86,14 +86,6 @@ var Store = _.defineClass(MixinResolvable, MixinSubscribable, {
   initialize: function(definition) {
     this.definition = definition;
     this.fragmentMap = new FragmentMap();
-
-    // If we have prefetchCache we can pre-populate now
-    if (this.definition.type) {
-      var typeCache = RPS.prefetchCache[this.definition.type];
-      if (typeCache) {
-        this.fragmentMap.update({}, ACTION_FETCH, typeCache, STATUS_SUCCESS);
-      }
-    }
   },
 
   createDataset: function() {

@@ -10,7 +10,7 @@ var defineAction = exports.defineAction = require('./defineAction');
 var defineActions = exports.defineActions = function(actions) {
   if (!_.isPlainObject(actions)) {
     throw new TypeError(
-      "defineActions: Expected simple object but found  `" + typeof(actions) + "`. "
+      "defineActions: Expected simple object but found  `" + typeof(actions) + "`."
     );
   }
 
