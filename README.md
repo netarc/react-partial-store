@@ -32,6 +32,7 @@ By forcing the data-flow to be in a single direction, it will be easier to follo
      - [Actions](#creating-actions)
      - [Component](#component-usage)
 - [Advanced Usage](#advanced-usage)
+     - [Partials](#partials)
 
 ## Installation
 
@@ -77,10 +78,10 @@ Above is as dry as it gets. Stores can be further configured with the following 
 
 Name | Type | Required | Description
 -----|------|----------|------------
-type|string | no | The unique name representing the objects in this Store. When no-name is provided it will be considered an anonymous Store.
-uri|string | no | A URI that will be resolved and concatenated with other URI's in the stack. Component params may be referenced in the URI by doing `:paramName`.
-actions|array(string) | no | A list of Actions that will be provided to the Component referencing this Store. This list of actions will be concatenated with other Actions as the stack is resolved.
-onlyActions|array(string) | no | A list of Actions considered to whitelist any Actions found later in the stack.
+type | string | no | The unique name representing the objects in this Store. When no-name is provided it will be considered an anonymous Store.
+uri | string | no | A URI that will be resolved and concatenated with other URI's in the stack. Component params may be referenced in the URI by doing `:paramName`.
+actions | object | no | An object depicting accessor names and action values that will be provided to the Component referencing this Store. This list of actions will be concatenated with other Actions as the stack is resolved.
+onlyActions | object | no | An object depicting accessor names and action values that will whitelist any Actions found later in the stack.
 
 [Back to top](#content)
 
@@ -119,32 +120,61 @@ Datasets can be further configured with the following options:
 
 Name | Type | Required | Description
 -----|------|----------|------------
-partial|string | no | When specified, resources that are fetched through this Dataset are associated with the specified partial name unless over-ridden further down the chain.
-fragments|array(string) | no | Specified fragments that are used to compose objects from this dataset until the "complete" data can be fetched.
-paramMap|object | no | A lookup table to map params on the Component with params in the `uri`.
-paramId|string | no | An identifier to the Component param that will server as the unique id for this Dataset.
-uri|string | no | A URI that will be resolved and concatenated with other URI's in the stack. Component params may be referenced in the URI by doing `:paramName`.
-actions|array(string) | no | A list of Actions that will be provided to the Component referencing this Store. This list of actions will be concatenated with other Actions as the stack is resolved.
-onlyActions|array(string) | no | A list of Actions considered to whitelist any Actions found later in the stack.
+partial | string | no | When specified, resources that are fetched through this Dataset are associated with the specified partial name unless over-ridden further down the chain.
+fragments | array(string) | no | Specified fragments that are used to compose objects from this dataset until the "complete" data can be fetched.
+paramMap | object | no | A lookup table to map params on the Component with params in the `uri`.
+paramId | string | no | An identifier to the Component param that will server as the unique id for this Dataset.
+uri | string | no | A URI that will be resolved and concatenated with other URI's in the stack. Component params may be referenced in the URI by doing `:paramName`.
+actions | object | no | An object depicting accessor names and action values that will be provided to the Component referencing this Dataset. This list of actions will be concatenated with other Actions as the stack is resolved.
+onlyActions | object | no | An object depicting accessor names and action values that will whitelist any Actions found later in the stack.
 
 [Back to top](#content)
 
 ### Creating Actions
 
-An Action can be created by calling `RPS.createAction` with a function for execution when invoked. The return value of the function supplied to the `createAction` will be appended to the Stack when the Action resolves. Be aware this won't resolve to an action against a resource. If you want to `update` a resource via a custom Action you will need to hook an existing action provided by RPS that will resolve to an `update` such as `RPS.actions.update` by making use of the `.hook(fn)` method on Actions.
+An Action can be created by calling `RPS.createAction` with a function and/or definition. The return value of a function supplied will be appended to the Stack when the Action resolves. Be aware this won't automatically resolve to an end-point action (`update` / `create` / `delete`). If you want to `update` (**PUT**) a resource via a custom Action you will need to hook the predefined Action `RPS.actions.update` by making use of the `.hook(fn)` method thats inherit on all Actions.
 
 ```javascript
 var ProjectsStore = RPS.createStore("projects");
 
-var ActionArchive = RPS.actions.update.hook(function() {
-  return {archive: true}
+var ActionArchive = RPS.actions.update.hook({
+  uri: "/archive"
 })
 
 var ProjectsDataset = ProjectsStore.createDataset({
-  uri: "/projects",
-  actions: [ActionArchive]
+  uri: "/projects"
+});
+
+var ProjectDataset = ProjectsDataset.createDataset({
+  uri: "/:projectId",
+  paramId: "projectId",
+  actions: {
+    archive: ActionArchive
+  }
+});
+
+```
+
+Now when using this Dataset in your Component, simply call `this.project.archive()` to invoke the `update` (**PUT**) that will resolve to `/projects/:projectId/archive`.
+
+Let's see this as a callback intead that appends json into the response:
+
+```
+var ActionArchive = RPS.actions.update.hook(function() {
+  console.info("archiving project: %i", this.projectId);
+  return {
+    archive: true
+  };
 });
 ```
+
+When Providing an options object to an Action you can use the following:
+
+#### Action Options
+
+Name | Type | Required | Description
+-----|------|----------|------------
+uri | string | no | A URI that will be resolved and concatenated with other URI's in the stack. Component params may be referenced in the URI by doing `:paramName`.
 
 [Back to top](#content)
 
@@ -242,7 +272,7 @@ var ComponentProjectsList = RPS.createClass({
 
 If you are familiar with other Stores in React you may notice that you aren't accessing data through `this.props`. Instead all dataset accessors are mounted right on the component itself.
 
-You may have also noticed that the `.delete` action (any action through a React Component) returns a [Promise](http://www.html5rocks.com/en/tutorials/es6/promises/) that can be followed for a success/failure. But wait, why is the `delete` action even available in the first place; we didn't specify any `actions` option for our Store or Datasets? This is because by default Datasets offer the basic `create`, `update`, `delete` actions. If you want to disable them you can pass `onlyActions: []` to your Dataset or Store as a simple empty white-list.
+You may have also noticed that the `.delete` action (any action through a React Component) returns a [Promise](http://www.html5rocks.com/en/tutorials/es6/promises/) that can be followed for a success/failure. But wait, why is the `delete` action even available in the first place; we didn't specify any `actions` option for our Store or Datasets? This is because by default Datasets offer the basic `create`, `update`, `delete` actions. If you want to disable them you can pass `onlyActions: {}` to your Dataset or Store as a simple empty white-list.
 
 You will also see one of several helper methods for components in use via `this.isLoading()`, this will check all datasets to see if any are actively waiting for data.
 
@@ -250,6 +280,92 @@ You will also see one of several helper methods for components in use via `this.
 
 ## Advanced Usage
 
-What about this **Partials** talk mentioned earlier?
+### Partials
+
+We mentioned **partials** earlier, but didn't see them in action. Out of the box RPS will work with non-fragmented resources. But let's add some optimization and fragment some data.
+
+This can be accomplished one of two ways.
+
+#### Approach 1 - Manual
+
+From our above example we can rewrite the Datasets and declare them fragmented and associated as a partial.
+
+```
+var ProjectsDataset = ProjectsStore.createDataset({
+  partial: "minimal",
+  uri: "/projects"
+});
+
+var ProjectDataset = ProjectsDataset.createDataset({
+  uri: "/:projectId",
+  paramId: "projectId",
+  fragments: ["minimal"]
+});
+```
+
+We can see that any resources going through our `ProjectsDataset` will be associated as a partial called **minimal**. The server can then return a minimalistic represntation of a project for the index view. The other Dataset says it accepts fragments of a given partial to allow a pre-render before the complete data is fetched and rendered completey.
+
+This can be expanded in a React Component as the following:
+
+```
+var ComponentProjectShow = RPS.createClass({
+  datasets: {
+    project: ProjectDataset
+  },
+  render: function() {
+    var projectDataset = this.project
+      , project = projectDataset.data;
+
+    if (this.isLoading() && !this.hasData()) {
+      return (
+        <div>Loading Project...</div>
+      );
+    }
+
+    return (
+      <div>
+        <label>Title</label>
+        <span>{project.title}</span>
+        <label>Description</label>
+        <span>{project.description}</span>
+        <label>Options</label>
+        <span>
+          <a href="#" onClick={this._delete}>Delete Project</a>
+        </span>
+      </div>
+    );
+  },
+  _delete: function() {
+    this.project.delete()
+      .then(function() {
+        window.location = "/projects"
+      });
+  }
+});
+```
+
+We just added an extra conditional `&& !this.hasData()` (another one of those component helper methods mentioned earlier). So if the user is coming from the *index* view into the *show* view seen above, `isLoading()` will return true because the **complete** representation of the resource hasn't been loaded yet but `hasData()` will return true since it contains a fragment of existing data. Any properties on the resource object that are not in the fragment of data will be undefined and can be handled appropriately for a default value.
+
+#### Approach 2 - Automatic
+
+With this approach you can leave the Datasets without configuration seen above:
+
+```
+var ProjectsDataset = ProjectsStore.createDataset({
+  uri: "/projects"
+});
+
+var ProjectDataset = ProjectsDataset.createDataset({
+  uri: "/:projectId",
+  paramId: "projectId"
+});
+```
+
+And it will rely on the server denoting any partial existence when data is returned (with a specific json format containting a `_partial` property for each resource in the json representation; `minimal` on the index uri `/projects` and `full` for the show uri `/projects/:projectId`).
+
+### Embedding data on the page load
+
+### Relational data cross filling
+
 
 [Back to top](#content)
