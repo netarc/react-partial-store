@@ -2,10 +2,13 @@ var axios = require("axios")
   , Promise = require("es6-promise").Promise
   , RPS = require("./index")
   , _ = require("./utils")
-  , StoreSet = require("./StoreSet")
+  , Constants = require('./Constants')
+  , FragmentMap = require("./FragmentMap")
   , MixinResolvable = require("./MixinResolvable")
   , MixinSubscribable = require("./MixinSubscribable")
-  , FragmentMap = require("./FragmentMap")
+  , StoreSet = require("./StoreSet")
+  , ACTION_FETCH = Constants.action.fetch
+  , STATUS_SUCCESS = Constants.status.SUCCESS
   , Exports = {};
 
 
@@ -83,6 +86,14 @@ var Store = _.defineClass(MixinResolvable, MixinSubscribable, {
   initialize: function(definition) {
     this.definition = definition;
     this.fragmentMap = new FragmentMap();
+
+    // If we have prefetchCache we can pre-populate now
+    if (this.definition.type) {
+      var typeCache = RPS.prefetchCache[this.definition.type];
+      if (typeCache) {
+        this.fragmentMap.update({}, ACTION_FETCH, typeCache, STATUS_SUCCESS);
+      }
+    }
   },
 
   createDataset: function() {
@@ -139,7 +150,9 @@ module.exports = function(type, definition) {
   definition = definition || {}
 
   if (type) {
-    var store = StoreSet[type];
+    definition.type = type;
+    store = StoreSet[type];
+
     if (!store) {
       store = StoreSet[type] = new Store(validateDefinition(definition));
     }

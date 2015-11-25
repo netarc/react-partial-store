@@ -113,6 +113,7 @@ var FragmentMap = _.defineClass({
   update: function(resourceDescriptor, action, response, status) {
     console.groupCollapsed("fragment::update");
     var fragment = this._getFragment(resourceDescriptor.partial || FRAGMENT_DEFAULT)
+      , resourcePath = resourcePath
       , result = {};
 
     result = {
@@ -149,17 +150,19 @@ var FragmentMap = _.defineClass({
           });
 
           // cache set
-          fragment.queries[resourceDescriptor.path] = _.extend(result, {data: ids});
+          if (resourcePath)
+            fragment.queries[resourcePath] = _.extend(result, {data: ids});
         }
         else {
-          fragment.queries[resourceDescriptor.path] = _.extend(result, {data: response.data});
+          if (resourcePath)
+            fragment.queries[resourcePath] = _.extend(result, {data: response.data});
         }
       }
       else if (action === ACTION_SAVE) {
-        fragment.queries[resourceDescriptor.path] = _.extend(result, {data: response.data});
+          fragment.queries[resourcePath] = _.extend(result, {data: response.data});
       }
       else if (action === ACTION_DELETE) {
-        fragment.queries[resourceDescriptor.path] = _.extend(result, {data: []});
+        fragment.queries[resourcePath] = _.extend(result, {data: []});
       }
     }
 

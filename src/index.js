@@ -1,6 +1,7 @@
 exports.createClass = require('./createClass');
 exports.createStore = require('./createStore');
 exports.createDataset = require('./createDataset');
+exports.prefetchCache = require('./prefetchCache');
 
 var _ = require('./utils');
 
