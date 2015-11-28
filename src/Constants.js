@@ -15,4 +15,4 @@ module.exports = {
     save: "SAVE",
     delete: "DELETE"
   }
-}
+};

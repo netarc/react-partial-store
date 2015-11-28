@@ -2,9 +2,6 @@ var React = require("react")
   , Constants = require("./Constants")
   , _ = require('./utils')
   , StackInvoker = require('./StackInvoker')
-  , STATUS_SUCCESS = Constants.status.SUCCESS
-  , STATUS_ERROR = Constants.status.ERROR
-  , STATUS_PARTIAL = Constants.status.PARTIAL
   , STATUS_STALE = Constants.status.STALE
   , TIMESTAMP_LOADING = Constants.timestamp.loading
   , createClass = null;
@@ -13,12 +10,14 @@ var React = require("react")
 var anyDataset = function(names, predicate) {
   var self = this;
 
-  if (names)
+  if (names) {
     names = [].concat(names || []);
+  }
 
   return _.any(this.datasets, function(dataset, key) {
-    if (names && names.indexOf(key) === -1)
+    if (names && names.indexOf(key) === -1) {
       return false;
+    }
 
     return predicate(self[key]);
   });
@@ -66,8 +65,9 @@ var createMixinDatasetAccessor = function(dataset, datasetKey) {
         wrapped.__resolveInvoker = function(stack) {
           var promise = StackInvoker.invoke(stack);
 
-          if (!promise.then)
+          if (!promise.then) {
             return promise;
+          }
 
           promise.then(undefined, function(response) {
             // TODO: Pending json format spec
@@ -77,7 +77,7 @@ var createMixinDatasetAccessor = function(dataset, datasetKey) {
           });
 
           return promise;
-        }
+        };
 
         wrapper[key] = wrapped;
       });
@@ -85,7 +85,7 @@ var createMixinDatasetAccessor = function(dataset, datasetKey) {
       // Do we have a store we can subscribe to?
       if (resource.store) {
         var event = resource.event
-          , subscriptions = this.subscriptions = this.subscriptions || {}
+          , subscriptions = this.subscriptions = this.subscriptions || {};
 
         if (!subscriptions[event]) {
           // TODO: Switch this to throttle/debounce
@@ -107,8 +107,9 @@ var createMixinDatasetAccessor = function(dataset, datasetKey) {
 
       Object.defineProperty(this, datasetKey, {
         get: function () {
-          if (accessor)
+          if (accessor) {
             return accessor;
+          }
 
           var result = StackInvoker.invoke([].concat(
             dataset.resolve({__params: self.getComponentParams()}),
@@ -123,7 +124,7 @@ var createMixinDatasetAccessor = function(dataset, datasetKey) {
     },
 
     componentWillUnmount: function() {
-      _.each(this.subscriptions, function(unsubscriber, key) {
+      _.each(this.subscriptions, function(unsubscriber) {
         unsubscriber();
       });
       this.subscriptions = {};

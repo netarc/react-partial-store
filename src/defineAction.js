@@ -33,11 +33,13 @@ var defineAction = function() {
   var action = function() {
     var stack = [].concat(action.getResolvable(), [].slice.call(arguments));
 
-    if (action.parent)
-      return action.parent.resolve(stack)
-    else
+    if (action.parent) {
+      return action.parent.resolve(stack);
+    }
+    else {
       return action.__resolveInvoker ? action.__resolveInvoker(stack) : stack;
-  }
+    }
+  };
 
   _.extendFunction(action, MixinResolvable);
 
@@ -52,7 +54,7 @@ var defineAction = function() {
     }
 
     return result;
-  }
+  };
 
   /**
    * Hook the action method and chain another creating a new Action and
@@ -65,8 +67,8 @@ var defineAction = function() {
   action.hook = function() {
     var hook = defineAction.apply(null, arguments);
     hook.parent = action;
-    return hook
-  }
+    return hook;
+  };
 
   /**
    * Wrap will execute our new inner (local outer) Action and pass its result
@@ -84,12 +86,12 @@ var defineAction = function() {
     wrapped.resolve = function(stack) {
       stack = [].concat(wrapped.getResolvable.call(context || this), stack || []);
       return wrapped.parent ? wrapped.parent.resolve(stack) : stack;
-    }
+    };
 
     return wrapped;
-  }
+  };
 
   return action;
-}
+};
 
 module.exports = defineAction;

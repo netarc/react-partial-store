@@ -18,7 +18,7 @@ var defineActions = exports.defineActions = function(actions) {
   var result = {};
   _.each(actions, function(val, key) {
     result[key] = defineAction(val);
-  })
+  });
 
   return result;
 };
@@ -45,4 +45,4 @@ exports.actions = defineActions({
   delete: function() {
     return {__resolve: "delete"};
   }
-})
+});

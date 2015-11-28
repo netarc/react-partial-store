@@ -3,7 +3,8 @@ var _ = require("./utils")
 
 
 function setEntries(data, options) {
-  options = options || {}
+  options = options || {};
+
   if (!_.isPlainObject(options)) {
     throw new TypeError(
       "setEntries: Expected config options object but found `" + typeof(options) + "`."

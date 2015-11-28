@@ -12,8 +12,9 @@ function validateDefinition(definition) {
   }
 
   // Does the definition looks like a MixinResolvable
-  if (_.isFunction(definition.resolve) && _.isFunction(definition.getResolvable))
+  if (_.isFunction(definition.resolve) && _.isFunction(definition.getResolvable)) {
     return definition;
+  }
 
   if (definition.partial && typeof(definition.partial) !== "string") {
     throw new TypeError(
@@ -60,7 +61,7 @@ function validateDefinition(definition) {
   }
 
   return definition;
-};
+}
 
 /**
  * A dataset represents a configuration against a data store that provides an
@@ -128,10 +129,12 @@ module.exports = function() {
       var definition = validateDefinition(definitions[i]);
 
       // If our definition looks like a MixinResolvable then no need to wrap it
-      if (definition.resolve && definition.getResolvable)
-        result.push(definition)
-      else
+      if (definition.resolve && definition.getResolvable) {
+        result.push(definition);
+      }
+      else {
         result.push(RPS.createDataset(definition));
+      }
     }
   }
 

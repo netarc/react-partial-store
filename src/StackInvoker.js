@@ -3,11 +3,7 @@ var axios = require("axios")
   , Constants = require("./Constants")
   , RPS = require("./index")
   , STATUS_SUCCESS = Constants.status.SUCCESS
-  , STATUS_ERROR = Constants.status.ERROR
-  , STATUS_PARTIAL = Constants.status.PARTIAL
   , STATUS_STALE = Constants.status.STALE
-  , FRAGMENT_DEFAULT = Constants.defaultFragment
-  , TIMESTAMP_STALE = Constants.timestamp.stale
   , TIMESTAMP_LOADING = Constants.timestamp.loading
   , ACTION_FETCH = Constants.action.fetch
   , ACTION_SAVE = Constants.action.save
@@ -39,7 +35,7 @@ var composeURI = function(uri, params, paramMap) {
   }
 
   return pieces.join('/');
-}
+};
 
 var resolveResource = function(stack) {
   var resolvedParams = {}
@@ -52,37 +48,42 @@ var resolveResource = function(stack) {
     , resolvedFragments = []
     , resolvedParamId = null
     , resolvedPayload = {}
-    , i;
+    , i, op, definition;
 
   // Pass 1
-  for (var i = 0; i < stack.length; i++) {
-    var op = stack[i]
-      , definition = op.__definition;
+  for (i = 0; i < stack.length; i++) {
+    op = stack[i];
+    definition = op.__definition;
 
     if (definition) {
       // Store specific resolve rules
       if (op.__type === "store") {
         resolvedStore = op.__reference;
 
-        if (definition.type)
+        if (definition.type) {
           resolvedType = definition.type;
+        }
       }
 
       // Dataset specific resolve rules
       if (op.__type === "dataset") {
-        if (definition.paramMap)
+        if (definition.paramMap) {
           resolvedParamMap = _.extend(resolvedParamMap, definition.paramMap);
+        }
 
-        if (definition.partial)
+        if (definition.partial) {
           resolvedPartial = definition.partial;
+        }
 
-        if (definition.fragments)
+        if (definition.fragments) {
           resolvedFragments = resolvedFragments.concat(definition.fragments);
+        }
       }
 
       // Common resolve rules
-      if (definition.paramId)
+      if (definition.paramId) {
         resolvedParamId = definition.paramId;
+      }
 
       if (definition.onlyActions) {
         if (!_.isPlainObject(definition.onlyActions)) {
@@ -92,8 +93,9 @@ var resolveResource = function(stack) {
       }
 
       if (definition.actions) {
-        if (!_.isPlainObject(definition.actions))
+        if (!_.isPlainObject(definition.actions)) {
           throw new TypeError("actions was not an object, but of type \"" + typeof definition.actions + "\"");
+        }
         resolvedActions = _.extend(resolvedActions, definition.actions);
       }
     }
@@ -106,19 +108,21 @@ var resolveResource = function(stack) {
   }
 
   // Pass 2 - Since URI uses resolved params we need to do it separately
-  for (var i = 0; i < stack.length; i++) {
-    var op = stack[i]
-      , definition = op.__definition;
+  for (i = 0; i < stack.length; i++) {
+    op = stack[i];
+    definition = op.__definition;
 
     if (definition) {
-      if (definition.uri)
+      if (definition.uri) {
         resolvedPath+= composeURI(definition.uri, resolvedParams, resolvedParamMap);
+      }
     }
   }
 
   var key = resolvedParamId || "id";
-  if (resolvedParamMap[key])
+  if (resolvedParamMap[key]) {
     key = resolvedParamMap[key];
+  }
   resolvedParamId = resolvedParams[key];
 
   var event = ["change"].concat(resolvedParamId || []).join(':');
@@ -135,7 +139,7 @@ var resolveResource = function(stack) {
     store: resolvedStore,
     type: resolvedType
   };
-}
+};
 
 /**
  * Given a known Store update a resource descriptors data and repeat with
@@ -177,9 +181,10 @@ StackInvoker.Resolvers = Resolvers = {
     var store = resourceDescriptor.store;
 
     return new Promise(function(resolve, reject) {
-      store.touchResource(resourceDescriptor, ACTION_FETCH, {status: STATUS_STALE, timestamp: TIMESTAMP_LOADING})
-      if (!noNotify)
+      store.touchResource(resourceDescriptor, ACTION_FETCH, {status: STATUS_STALE, timestamp: TIMESTAMP_LOADING});
+      if (!noNotify) {
         store.notifyChange(resourceDescriptor);
+      }
 
       var promise = axios.get(resourceDescriptor.path);
       hookRequest(promise, resolve, reject, resourceDescriptor, ACTION_FETCH);
@@ -226,11 +231,11 @@ StackInvoker.Resolvers = Resolvers = {
   // a resource object instead of a promise.
   fetch: function(resourceDescriptor, stack) {
     var store = resourceDescriptor.store
-      , resource = store.fetchResource(resourceDescriptor)
+      , resource = store.fetchResource(resourceDescriptor);
 
     if (!resource.data || resource.timestamp < TIMESTAMP_LOADING) {
       this.get(resourceDescriptor, stack, true);
-      resource = store.fetchResource(resourceDescriptor)
+      resource = store.fetchResource(resourceDescriptor);
     }
 
     return resource;
@@ -254,8 +259,9 @@ StackInvoker.invoke = function(stack) {
 
   // Consume all resolve actions and settle on our final one
   for (var i = 0; i < stack.length; i++) {
-    if (resolveAction = stack[i].__resolve)
+    if (resolveAction == stack[i].__resolve) {
       stack.splice(i, 1);
+    }
   }
 
   console.groupCollapsed("StackInvoker::invoke %c%s", 'font-weight:normal;', resolveAction || "{descriptor}");
@@ -268,12 +274,13 @@ StackInvoker.invoke = function(stack) {
   }
 
   var resolver = Resolvers[resolveAction];
-  if (!resolver)
+  if (!resolver) {
     throw new Error("Store cannot resolve `" + resolveAction + "`");
+  }
 
   var result = resolver.call(Resolvers, resourceDescriptor, stack);
   console.groupEnd();
-  return result
+  return result;
 };
 
 module.exports = StackInvoker;

@@ -3,7 +3,6 @@ var _ = require("./utils")
   , Constants = require("./Constants")
   , StoreSet = require("./StoreSet")
   , STATUS_SUCCESS = Constants.status.SUCCESS
-  , FRAGMENT_DEFAULT = Constants.defaultFragment
   , ACTION_FETCH = Constants.action.fetch
   , Handlers = {};
 
@@ -26,12 +25,15 @@ function parseObject(object) {
 
   _.each(object, function(value, key) {
     if (key[0] === '_') {
-      if (key === "_type")
+      if (key === "_type") {
         result.type = value;
-      else if (key === "_partial")
+      }
+      else if (key === "_partial") {
         result.partial = value;
-      else
+      }
+      else {
         console.warn("embeddableNoContainer: ignoring unknown object property `" + key + "`");
+      }
 
       return;
     }
@@ -39,7 +41,7 @@ function parseObject(object) {
     // while parsing an object, any array/object is considered embedded data
     // so we just treat it like the start of a unknown request
     if (_.isArray(value) || _.isPlainObject(value)) {
-      embeddableNoContainer(value)
+      embeddableNoContainer(value);
     }
     else {
       data[key] = value;
@@ -91,9 +93,9 @@ function embeddableNoContainer(data, descriptor) {
   else if (_.isPlainObject(data)) {
     var resource = parseObject(data);
 
-    result = resource.data
+    result = resource.data;
     descriptor.id = result.id;
-    discoveredType = resource.type
+    discoveredType = resource.type;
     discoveredPartial = resource.partial;
   }
   else {
@@ -104,10 +106,11 @@ function embeddableNoContainer(data, descriptor) {
   }
 
   var resolvedType = descriptor.type = descriptor.type || discoveredType
-    , resolvedPartial = descriptor.partial = descriptor.partial ||
-                                             discoveredPartial ||
-                                             Constants.defaultFragment
     , store = StoreSet[resolvedType];
+
+  descriptor.partial = descriptor.partial ||
+                       discoveredPartial ||
+                       Constants.defaultFragment;
 
   if (!resolvedType) {
     throw new TypeError(
@@ -116,7 +119,7 @@ function embeddableNoContainer(data, descriptor) {
   }
 
   if (!store) {
-    if (options.isPrefetch) {
+    if (descriptor.isPrefetch) {
       store = createStore(resolvedType, {_shadow: true});
     }
     else {
@@ -127,7 +130,7 @@ function embeddableNoContainer(data, descriptor) {
   }
 
   store.updateResource(descriptor, ACTION_FETCH, result, STATUS_SUCCESS);
-};
+}
 
 Handlers.embeddableNoContainer = embeddableNoContainer;
 

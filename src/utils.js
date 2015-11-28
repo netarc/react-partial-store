@@ -10,13 +10,16 @@ var objToString = Object.prototype.toString
 
 
 exports.keysFor = keysFor = Object.keys || function(obj) {
-  if (typeof(obj) !== "object")
+  if (typeof(obj) !== "object") {
     return [];
+  }
 
   var keys = [];
-  for (var key in obj)
-    if (obj.hasOwnProperty(key))
+  for (var key in obj) {
+    if (obj.hasOwnProperty(key)) {
       keys.push(key);
+    }
+  }
 
   return keys;
 };
@@ -25,30 +28,35 @@ var resolveChain = function(defOld, defNew) {
   return function() {
     defOld.apply(this, arguments);
     defNew.apply(this, arguments);
-  }
+  };
 };
 
 var createAssigner = function(resolver, executeInit) {
   return function(obj) {
     var length = arguments.length;
 
-    if (length < 2 || obj == null)
+    if (length < 2 || obj === null) {
       return obj;
+    }
 
     for (var index = 1; index < length; index++) {
       var source = arguments[index],
           keys = keysFor(source),
           l = keys.length;
+
       for (var i = 0; i < l; i++) {
         var key = keys[i];
+
         if (executeInit && key === "initialize") {
           source[key].apply(obj);
         }
         else {
-          if (resolver && key === "initialize" && obj[key] !== void 0)
+          if (resolver && key === "initialize" && obj[key] !== void 0) {
             obj[key] = resolver(obj[key], source[key]);
-          else
+          }
+          else {
             obj[key] = source[key];
+          }
         }
       }
     }
@@ -81,7 +89,7 @@ exports.extendFunction = extendFunction = createAssigner(resolveChain, true);
 
 exports.each = each = function(obj, iteratee) {
   var i, length;
-  if (typeof(obj) === "array") {
+  if (isArray(obj)) {
     for (i = 0, length = obj.length; i < length; i++) {
       iteratee(obj[i], i, obj);
     }
@@ -92,20 +100,22 @@ exports.each = each = function(obj, iteratee) {
     }
   }
   return obj;
-}
+};
 
 exports.any = function(obj, predicate) {
   var i, length;
-  if (typeof(obj) === "array") {
+  if (isArray(obj)) {
     for (i = 0, length = obj.length; i < length; i++) {
-      if (predicate(obj[i], i, obj))
+      if (predicate(obj[i], i, obj)) {
         return true;
+      }
     }
   } else {
     var keys = keysFor(obj);
     for (i = 0, length = keys.length; i < length; i++) {
-      if (predicate(obj[keys[i]], keys[i], obj))
+      if (predicate(obj[keys[i]], keys[i], obj)) {
         return true;
+      }
     }
   }
   return false;
@@ -123,27 +133,29 @@ exports.map = function(obj, iteratee) {
 };
 
 exports.deepCopy = deepCopy = function(obj) {
+  var out
+    , i
+    , length;
+
   if (objToString.call(obj) === '[object Array]') {
-    var out = []
-      , i = 0
-      , length = obj.length;
-    for ( ; i < length; i++ ) {
+    length = obj.length;
+    out = [];
+    for (i = 0; i < length; i++) {
       out[i] = deepCopy(obj[i]);
     }
     return out;
   }
   else if (typeof obj === 'object') {
-    var out = {}
-      , i = 0
-      , keys = keysFor(obj)
-      , length = keys.length;
-    for ( ; i < length; i++) {
+    var keys = keysFor(obj);
+    length = keys.length;
+    out = {};
+    for (i = 0; i < length; i++) {
       out[i] = deepCopy(obj[i]);
     }
     return out;
   }
   return obj;
-}
+};
 
 exports.capitalize = function(string){
   return string.charAt(0).toUpperCase()+string.slice(1);
@@ -160,12 +172,12 @@ exports.defineClass = function() {
     }
   };
 
-  each(arguments, function(definition, index) {
+  each(arguments, function(definition) {
     extendClass(Class.prototype, definition);
   });
 
   return Class;
-}
+};
 
 // TODO: Temporary
 exports.log = function(zone, method, msg) {
@@ -182,4 +194,4 @@ exports.log = function(zone, method, msg) {
                 'font-weight:normal;',
                 'font-weight:bold;', method);
   }
-}
+};

@@ -1,22 +1,17 @@
-var axios = require("axios")
-  , Promise = require("es6-promise").Promise
+var Promise = require("es6-promise").Promise
   , RPS = require("./index")
   , _ = require("./utils")
-  , Constants = require('./Constants')
   , FragmentMap = require("./FragmentMap")
   , MixinResolvable = require("./MixinResolvable")
   , MixinSubscribable = require("./MixinSubscribable")
-  , StoreSet = require("./StoreSet")
-  , ACTION_FETCH = Constants.action.fetch
-  , STATUS_SUCCESS = Constants.status.SUCCESS
-  , Exports = {};
+  , StoreSet = require("./StoreSet");
 
 
 Promise.prototype._onerror = function(err) {
   if (Object.prototype.toString.call(err) == "[object Error]") {
     console.assert(false, err);
   }
-}
+};
 
 function validateDefinition(definition) {
   if (!_.isPlainObject(definition)) {
@@ -61,7 +56,7 @@ function validateDefinition(definition) {
   }
 
   return definition;
-};
+}
 
 /**
  * A store is simply a gateway to a collection of abstract objects via a data
@@ -108,8 +103,9 @@ var Store = _.defineClass(MixinResolvable, MixinSubscribable, {
 
   notifyChange: function(resourceDescriptor) {
     this.trigger("change");
-    if (resourceDescriptor.id)
+    if (resourceDescriptor.id) {
       this.trigger(resourceDescriptor.event);
+    }
   },
 
   // Fragment Map is intentionally separate to allow future switching depending
@@ -124,7 +120,7 @@ var Store = _.defineClass(MixinResolvable, MixinSubscribable, {
   },
 
   updateResource: function(resourceDescriptor, action, data, status) {
-    this.fragmentMap.update(resourceDescriptor, action, data, status)
+    this.fragmentMap.update(resourceDescriptor, action, data, status);
   }
 });
 
@@ -139,7 +135,7 @@ module.exports = function(type, definition) {
     type = null;
   }
 
-  definition = definition || {}
+  definition = definition || {};
 
   if (type) {
     definition.type = type;
