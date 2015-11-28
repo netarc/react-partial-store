@@ -5,10 +5,11 @@ var objToString = Object.prototype.toString
   , extendClass
   , extendFunction
   , each
-  , deepCopy;
+  , deepCopy
+  , keysFor;
 
 
-var keysFunc = Object.keys || function(obj) {
+exports.keysFor = keysFor = Object.keys || function(obj) {
   if (typeof(obj) !== "object")
     return [];
 
@@ -36,7 +37,7 @@ var createAssigner = function(resolver, executeInit) {
 
     for (var index = 1; index < length; index++) {
       var source = arguments[index],
-          keys = keysFunc(source),
+          keys = keysFor(source),
           l = keys.length;
       for (var i = 0; i < l; i++) {
         var key = keys[i];
@@ -85,7 +86,7 @@ exports.each = each = function(obj, iteratee) {
       iteratee(obj[i], i, obj);
     }
   } else {
-    var keys = keysFunc(obj);
+    var keys = keysFor(obj);
     for (i = 0, length = keys.length; i < length; i++) {
       iteratee(obj[keys[i]], keys[i], obj);
     }
@@ -101,7 +102,7 @@ exports.any = function(obj, predicate) {
         return true;
     }
   } else {
-    var keys = keysFunc(obj);
+    var keys = keysFor(obj);
     for (i = 0, length = keys.length; i < length; i++) {
       if (predicate(obj[keys[i]], keys[i], obj))
         return true;
@@ -111,7 +112,7 @@ exports.any = function(obj, predicate) {
 };
 
 exports.map = function(obj, iteratee) {
-  var keys = !isArray(obj) && keysFunc(obj)
+  var keys = !isArray(obj) && keysFor(obj)
     , length = (keys || obj).length
     , results = Array(length);
   for (var index = 0; index < length; index++) {
@@ -134,7 +135,7 @@ exports.deepCopy = deepCopy = function(obj) {
   else if (typeof obj === 'object') {
     var out = {}
       , i = 0
-      , keys = keysFunc(obj)
+      , keys = keysFor(obj)
       , length = keys.length;
     for ( ; i < length; i++) {
       out[i] = deepCopy(obj[i]);
