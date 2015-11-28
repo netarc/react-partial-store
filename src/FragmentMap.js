@@ -1,6 +1,5 @@
 var RPS = require('./index')
   , _ = require('./utils')
-  , rawPrefetchCache = require('./prefetchCache').raw
   , Constants = require('./Constants')
   , ACTION_DELETE = Constants.action.delete
   , ACTION_FETCH = Constants.action.fetch
@@ -24,7 +23,8 @@ var RPS = require('./index')
  */
 var FragmentMap = _.defineClass({
   initialize: function() {
-    this.data = {};
+    this.fragments = {};
+    this.queries = {};
   },
 
   /**
@@ -32,6 +32,7 @@ var FragmentMap = _.defineClass({
    */
   fetch: function(resourceDescriptor) {
     console.groupCollapsed("fragment::fetch");
+    console.info("has data: %o", _.extend({}, this));
 
     var fragment = this._getFragment(resourceDescriptor.partial || FRAGMENT_DEFAULT)
       , resourceId = resourceDescriptor.id
@@ -43,24 +44,21 @@ var FragmentMap = _.defineClass({
     };
 
     if (resourceId) {
-      var resource = fragment.entries[resourceId];
+      var resource = fragment[resourceId];
 
-      if (resource)
-        _.extend(result, resource);
+      if (resource) {
+        result.status = resource.status;
+        result.timestamp = resource.timestamp
+        result.data = resource.data
+      }
 
       if (!result.data) {
-        // 1 - Use cache from our prefetch first
-        if (resourceDescriptor.type) {
-          result.data = rawPrefetchCache.entries[resourceDescriptor.type];
-        }
-
-        // 2 - Fall back to newer fragments if we have them in addition to any prefetch
         // Create a new list of fragments with our global default being last at highest priority.
         var fragments = [].concat(resourceDescriptor.fragments, FRAGMENT_DEFUALT);
 
         for (var i = 0; i < fragments.length; i++) {
           var fragment = fragments[i]
-            , fragment_resource = this._getFragment(fragment).entries[resourceId];
+            , fragment_resource = this._getFragment(fragment)[resourceId];
 
           if (fragment_resource && fragment_resource.data) {
             console.info("using fragment: %O", fragment_resource);
@@ -72,35 +70,31 @@ var FragmentMap = _.defineClass({
       }
     }
     else {
-      var query = fragment.queries[resourceDescriptor.path];
+      var resource = this.queries[resourceDescriptor.path];
 
-      // Use cache from our prefetch first
-      if (!query) {
-        var queryCache = rawPrefetchCache.queries[resourceDescriptor.path];
-        if (queryCache) {
-          query = {
-            data: rawPrefetchCache.queries[resourceDescriptor.path],
-            status: STATUS_SUCCESS,
-            timestamp: Date.now()
-          };
-        }
-      }
+      if (resource) {
+        result.status = resource.status;
+        result.timestamp = resource.timestamp
 
-      if (query) {
-        // Found a colleciton query?
-        if (_.isArray(query.data)) {
-          var resources = _.map(query.data, function(id) {
-            return _.extend({
-              status: STATUS_STALE,
-              timestamp: TIMESTAMP_STALE
-            }, fragment.entries[id] || {});
+        // Found a collection resource?
+        if (_.isArray(resource.data)) {
+          var resources = _.map(resource.data, function(id) {
+            var resource = fragment[id];
+
+            if (!resource) {
+              throw new TypeError(
+                "FragmentMap:fetch Unexpected error, failure to find collection entry for `" + id + "`."
+              );
+            }
+
+            return resource.data;
           });
 
-          _.extend(result, query, {data: resources});
+          result.data = resources;
         }
         // Query was for a non-id resource?
         else {
-          _.extend(result, query);
+          result.data = resource.data;
         }
       }
     }
@@ -118,11 +112,11 @@ var FragmentMap = _.defineClass({
     var fragment = this._getFragment(resourceDescriptor.partial || FRAGMENT_DEFAULT);
 
     if (resourceDescriptor.id)
-      return (fragment.entries[resourceDescriptor.id] =
-        _.extend(fragment.entries[resourceDescriptor.id] || {}, touch));
+      return (fragment[resourceDescriptor.id] =
+        _.extend(fragment[resourceDescriptor.id] || {}, touch));
     else
-      return (fragment.queries[resourceDescriptor.path] =
-        _.extend(fragment.queries[resourceDescriptor.path] || {}, touch));
+      return (this.queries[resourceDescriptor.path] =
+        _.extend(this.queries[resourceDescriptor.path] || {}, touch));
   },
 
   /**
@@ -132,6 +126,7 @@ var FragmentMap = _.defineClass({
    */
   update: function(resourceDescriptor, action, response, status) {
     console.groupCollapsed("fragment::update");
+    console.info("  * with descriptor %o", resourceDescriptor);
     var fragment = this._getFragment(resourceDescriptor.partial || FRAGMENT_DEFAULT)
       , resourcePath = resourceDescriptor.path
       , result = {};
@@ -143,11 +138,11 @@ var FragmentMap = _.defineClass({
 
     if (resourceDescriptor.id) {
       if (action === ACTION_FETCH) {
-        fragment.entries[resourceDescriptor.id] = _.extend(result, {data: response.data});
+        fragment[resourceDescriptor.id] = _.extend(result, {data: response});
       }
       else if (action === ACTION_DELETE) {
-        fragment.entries[resourceDescriptor.id] = undefined;
-        _.each(fragment.queries, function(resource, uri) {
+        fragment[resourceDescriptor.id] = undefined;
+        _.each(this.queries, function(resource, uri) {
           if (_.isArray(resource.data)) {
             var i = resource.data.indexOf(resourceDescriptor.id);
             if (i !== -1) {
@@ -159,42 +154,40 @@ var FragmentMap = _.defineClass({
     }
     else {
       if (action === ACTION_FETCH) {
-        if (_.isArray(response.data)) {
+        if (_.isArray(response)) {
           // normalize set into entries
-          var ids = _.map(response.data, function(item) {
+          response = _.map(response, function(item) {
             if (!_.isPlainObject(item))
               throw new TypeError('expected object, found ' + item + ' instead');
 
-            fragment.entries[item.id] = _.extend({}, result, {data: item});
+            fragment[item.id] = _.extend({}, result, {data: item});
             return item.id;
           });
-
-          // cache set
-          if (resourcePath)
-            fragment.queries[resourcePath] = _.extend(result, {data: ids});
         }
-        else {
-          if (resourcePath)
-            fragment.queries[resourcePath] = _.extend(result, {data: response.data});
+
+        if (resourcePath) {
+          this.queries[resourcePath] = _.extend(result, {
+            data: response,
+            partial: resourceDescriptor.partial
+          });
         }
       }
       else if (action === ACTION_SAVE) {
-          fragment.queries[resourcePath] = _.extend(result, {data: response.data});
+        this.queries[resourcePath] = _.extend(result, {data: response});
       }
       else if (action === ACTION_DELETE) {
-        fragment.queries[resourcePath] = _.extend(result, {data: []});
+        this.queries[resourcePath] = _.extend(result, {data: null});
       }
     }
 
-    console.info("updated fragment data: %O", this.data);
     console.info("result: %O", result);
     console.groupEnd();
     return result;
   },
 
   _getFragment: function(fragment) {
-    return this.data[fragment] ||
-          (this.data[fragment] = {entries: {}, queries: {}});
+    return this.fragments[fragment] ||
+          (this.fragments[fragment] = {});
   }
 });
 

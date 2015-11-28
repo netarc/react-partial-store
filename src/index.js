@@ -2,6 +2,7 @@ exports.createClass = require('./createClass');
 exports.createStore = require('./createStore');
 exports.createDataset = require('./createDataset');
 exports.prefetchCache = require('./prefetchCache');
+exports.responseHandler = require('./responseHandler');
 
 var _ = require('./utils');
 

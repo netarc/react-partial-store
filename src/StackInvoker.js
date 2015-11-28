@@ -2,9 +2,6 @@ var axios = require("axios")
   , _ = require("./utils")
   , Constants = require("./Constants")
   , RPS = require("./index")
-  , StoreSet = require("./StoreSet")
-  , Resolvers = null
-  , StackInvoker = {}
   , STATUS_SUCCESS = Constants.status.SUCCESS
   , STATUS_ERROR = Constants.status.ERROR
   , STATUS_PARTIAL = Constants.status.PARTIAL
@@ -14,7 +11,9 @@ var axios = require("axios")
   , TIMESTAMP_LOADING = Constants.timestamp.loading
   , ACTION_FETCH = Constants.action.fetch
   , ACTION_SAVE = Constants.action.save
-  , ACTION_DELETE = Constants.action.delete;
+  , ACTION_DELETE = Constants.action.delete
+  , Resolvers = null
+  , StackInvoker = {};
 
 
 var composeURI = function(uri, params, paramMap) {
@@ -143,11 +142,12 @@ var resolveResource = function(stack) {
  * any embedded data.
  */
 function updateStoreResource(store, resourceDescriptor, data, action) {
-  store.updateResource(resourceDescriptor, action, data, STATUS_SUCCESS);
-
-  // TODO: any embedded data needs to find its store and update there..
+  console.info("updateStoreResource: %o", resourceDescriptor);
   if (action == ACTION_FETCH) {
-
+    RPS.responseHandler.default(data, resourceDescriptor);
+  }
+  else {
+    store.updateResource(resourceDescriptor, action, data, STATUS_SUCCESS);
   }
 }
 

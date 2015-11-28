@@ -148,8 +148,13 @@ module.exports = function(type, definition) {
     if (!store) {
       store = StoreSet[type] = new Store(validateDefinition(definition));
     }
-    else if (definition) {
-      console.warn("createStore: Unexpected behavior, found existing Store of collection " +
+    // shadow stores typically come from prefetching when data might be assigned before stores
+    // get a chance to be created; so we allow a store to be created and overided when it is a shadow.
+    else if (store.definition._shadow) {
+      store.definition = definition;
+    }
+    else {
+      console.error("createStore: Unexpected behavior, found existing Store of collection " +
       "type `" + type + "` while trying to redefine.");
     }
   }
