@@ -33,6 +33,7 @@ By forcing the data-flow to be in a single direction, it will be easier to follo
      - [Component](#component-usage)
 - [Advanced Usage](#advanced-usage)
      - [Partials](#partials)
+     - [Embedded Data](#embedded-data)
 
 ## Installation
 
@@ -396,8 +397,10 @@ RPS.prefetchCache.setEntries("projects", [
 ]);
 ```
 
-### Relational data cross filling
+### Embedded Data (Relational data cross filling)
 
-TODO
+Another supported feature is allowing one resource request to potentially fill in other resource stores via embedded data in the response.
+
+TODO FINISH/EXAMPLES
 
 [Back to top](#content)

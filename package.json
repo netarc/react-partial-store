@@ -1,0 +1,53 @@
+{
+  "name": "react-partial-store",
+  "version": "0.0.1",
+  "description": "Another simple library for unidirectional dataflow architecture with support for fragmented (partial) data",
+  "main": "index.js",
+  "scripts": {
+    "build": "grunt build"
+  },
+  "author": "Joshua Hollenbeck",
+  "license": "BSD-3-Clause",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/netarc/react-partial-store.git"
+  },
+  "keywords": [
+    "react",
+    "store",
+    "partial",
+    "fragmented"
+  ],
+  "dependencies": {
+    "eventemitter3": "^0.1.2",
+    "axios": "^0.7.0",
+    "es6-promise": "^3.0.2"
+  },
+  "devDependencies": {
+    "benchmark": "^1.0.0",
+    "browserify": "~10.2.3",
+    "chai": "~3.0.0",
+    "chai-as-promised": "^5.0.0",
+    "grunt": "^0.4.5",
+    "grunt-browserify": "3.8.0",
+    "grunt-contrib-jshint": "0.11.2",
+    "grunt-contrib-uglify": "^0.5.0",
+    "grunt-contrib-watch": "^0.6.1",
+    "grunt-karma": "~0.11.0",
+    "grunt-mocha-test": "~0.12.7",
+    "karma": "~0.12.36",
+    "karma-browserify": "^4.2.1",
+    "karma-commonjs": "0.0.13",
+    "karma-mocha": "^0.1.9",
+    "karma-phantomjs-launcher": "~0.2.0",
+    "karma-sauce-launcher": "^0.2.10",
+    "karma-spec-reporter": "^0.0.19",
+    "matchdep": "^0.3.0",
+    "mocha": "~2.2.5",
+    "q": "^1.0.1",
+    "sinon": "^1.10.3"
+  },
+  "peerDependencies": {
+    "react": ">=0.12.2 <0.14.0"
+  }
+}

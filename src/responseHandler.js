@@ -3,7 +3,6 @@ var _ = require("./utils")
   , Constants = require("./Constants")
   , StoreSet = require("./StoreSet")
   , STATUS_SUCCESS = Constants.status.SUCCESS
-  , ACTION_FETCH = Constants.action.fetch
   , Handlers = {};
 
 
@@ -129,7 +128,7 @@ function embeddableNoContainer(data, descriptor) {
     }
   }
 
-  store.updateResource(descriptor, ACTION_FETCH, result, STATUS_SUCCESS);
+  store.updateResource(descriptor, result, STATUS_SUCCESS);
 }
 
 Handlers.embeddableNoContainer = embeddableNoContainer;

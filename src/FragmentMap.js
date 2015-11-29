@@ -1,21 +1,24 @@
 var _ = require('./utils')
   , Constants = require('./Constants')
-  , ACTION_DELETE = Constants.action.delete
-  , ACTION_FETCH = Constants.action.fetch
-  , ACTION_SAVE = Constants.action.save
   , FRAGMENT_DEFAULT = Constants.defaultFragment
-  , FRAGMENT_DEFUALT = Constants.defaultFragment
   , STATUS_PARTIAL = Constants.status.PARTIAL
   , STATUS_STALE = Constants.status.STALE
   , TIMESTAMP_STALE = Constants.timestamp.stale;
 
 
 /**
- * FragmentMap manages a collection of queries and mutators for a unique model
- * or type of data that might be represented through various fragments in partial
- * or complete form.
+ * FragmentMap is used for a single collection type of resource and manages a
+ * collection of queries and fragment entries that represent either the complete
+ * representation of a resource or named fragments of it.
  *
- * TODO: Remove the need to understand status/timestamp externally?
+ * Each action requires a Resource Descriptor which requires the following data:
+ * @param {String} path The end-point URI where this resource is associated.
+ * @param {String} [optional] id The unique id for a give resource.
+ * @param {String} [optional] partial The fragment to associate the resource with.
+ * @param {Array(String)} [optional] fragments A list of fragments we allow a fetch
+ *   to use to compose a partial representation of data.
+ *
+ * TODO: Should we remove the need to understand status/timestamp externally?
  */
 var FragmentMap = _.defineClass({
   initialize: function() {
@@ -24,14 +27,12 @@ var FragmentMap = _.defineClass({
   },
 
   /**
-   * Return a copy of a resource represented by a given resource descriptor
+   * Will return a Stale resource when a given resource cannot be found by the
+   * supplied descriptor.
    */
-  fetch: function(resourceDescriptor) {
-    console.groupCollapsed("fragment::fetch");
-    console.info("has data: %o", _.extend({}, this));
-
-    var fragmentCache = this._getFragment(resourceDescriptor.partial || FRAGMENT_DEFAULT)
-      , resourceId = resourceDescriptor.id
+  fetch: function(descriptor) {
+    var fragmentCache = this._getFragment(descriptor.partial || FRAGMENT_DEFAULT)
+      , resourceId = descriptor.id
       , result = null
       , resource = null;
 
@@ -51,22 +52,20 @@ var FragmentMap = _.defineClass({
 
       if (!result.data) {
         // Create a new list of fragments with our global default being last at highest priority.
-        var fragments = [].concat(resourceDescriptor.fragments, FRAGMENT_DEFUALT);
+        var fragments = [].concat(descriptor.fragments, FRAGMENT_DEFAULT);
 
         for (var i = 0; i < fragments.length; i++) {
           fragmentCache = this._getFragment(fragments[i])[resourceId];
 
           if (fragmentCache && fragmentCache.data) {
-            console.info("using fragment: %O", fragmentCache);
-
             result.data = _.extend(result.data || {}, fragmentCache.data || {});
             result.status = STATUS_PARTIAL;
           }
         }
       }
     }
-    else {
-      resource = this.queries[resourceDescriptor.path];
+    else if (descriptor.path) {
+      resource = this.queries[descriptor.path];
 
       if (resource) {
         result.status = resource.status;
@@ -95,38 +94,41 @@ var FragmentMap = _.defineClass({
       }
     }
 
-    console.info("result: %O", result);
-    console.groupEnd();
     return result;
   },
 
   /**
-   * Given a resourceDescriptor reference, update the root info.
+   * Update the metadata for a given resource.
+   *
+   * TODO: Maybe guard this more or change where metadata is stored as this method
+   * could change the `data` property.
    */
-  touch: function(resourceDescriptor, touch) {
-    _.log("fragment", "touch");
-    var fragmentCache = this._getFragment(resourceDescriptor.partial || FRAGMENT_DEFAULT);
+  touch: function(descriptor, touch) {
+    var fragmentCache = this._getFragment(descriptor.partial || FRAGMENT_DEFAULT);
 
-    if (resourceDescriptor.id) {
-      return (fragmentCache[resourceDescriptor.id] =
-        _.extend(fragmentCache[resourceDescriptor.id] || {}, touch));
+    if (!touch) {
+      return;
     }
-    else {
-      return (this.queries[resourceDescriptor.path] =
-        _.extend(this.queries[resourceDescriptor.path] || {}, touch));
+
+    if (descriptor.id) {
+      if (fragmentCache[descriptor.id]) {
+        fragmentCache[descriptor.id] = _.extend(fragmentCache[descriptor.id] || {}, touch);
+      }
+    }
+    else if (descriptor.path) {
+      if (this.queries[descriptor.path]) {
+        this.queries[descriptor.path] = _.extend(this.queries[descriptor.path] || {}, touch);
+      }
     }
   },
 
   /**
-   * Given a resourceDescriptor reference, update the contained data.
-   *
-   * TODO: Maybe split this up instead of specifying action?
+   * Update the content for a given resource.
    */
-  update: function(resourceDescriptor, action, response, status) {
-    console.groupCollapsed("fragment::update");
-    console.info("  * with descriptor %o", resourceDescriptor);
-    var fragmentCache = this._getFragment(resourceDescriptor.partial || FRAGMENT_DEFAULT)
-      , resourcePath = resourceDescriptor.path
+  update: function(descriptor, data, status) {
+    var fragment = descriptor.partial || FRAGMENT_DEFAULT
+      , fragmentCache = this._getFragment(fragment)
+      , resourcePath = descriptor.path
       , result = {};
 
     result = {
@@ -134,54 +136,62 @@ var FragmentMap = _.defineClass({
       timestamp: Date.now()
     };
 
-    if (resourceDescriptor.id) {
-      if (action === ACTION_FETCH) {
-        fragmentCache[resourceDescriptor.id] = _.extend(result, {data: response});
-      }
-      else if (action === ACTION_DELETE) {
-        fragmentCache[resourceDescriptor.id] = undefined;
-        _.each(this.queries, function(resource) {
-          if (_.isArray(resource.data)) {
-            var i = resource.data.indexOf(resourceDescriptor.id);
-            if (i !== -1) {
-              resource.data.splice(i, 1);
-            }
+    if (descriptor.id) {
+      fragmentCache[descriptor.id] = _.extend(result, {data: data});
+    }
+    else {
+      if (_.isArray(data)) {
+        // normalize set into entries
+        data = _.map(data, function(item) {
+          if (!_.isPlainObject(item)) {
+            throw new TypeError('expected object, found ' + item + ' instead');
           }
+
+          fragmentCache[item.id] = _.extend({}, result, {data: item});
+          return item.id;
+        });
+      }
+
+      if (resourcePath) {
+        this.queries[resourcePath] = _.extend(result, {
+          data: data,
+          partial: fragment
         });
       }
     }
-    else {
-      if (action === ACTION_FETCH) {
-        if (_.isArray(response)) {
-          // normalize set into entries
-          response = _.map(response, function(item) {
-            if (!_.isPlainObject(item)) {
-              throw new TypeError('expected object, found ' + item + ' instead');
-            }
 
-            fragmentCache[item.id] = _.extend({}, result, {data: item});
-            return item.id;
-          });
-        }
-
-        if (resourcePath) {
-          this.queries[resourcePath] = _.extend(result, {
-            data: response,
-            partial: resourceDescriptor.partial
-          });
-        }
-      }
-      else if (action === ACTION_SAVE) {
-        this.queries[resourcePath] = _.extend(result, {data: response});
-      }
-      else if (action === ACTION_DELETE) {
-        this.queries[resourcePath] = _.extend(result, {data: null});
-      }
-    }
-
-    console.info("result: %O", result);
-    console.groupEnd();
     return result;
+  },
+
+  /**
+   * Delete the content for a given resource.
+   *
+   * NOTE: We opt to set value to undefined vs deleting the key itself due to
+   * performance reasons (testing shows delete ~98% slower).
+   */
+  delete: function(descriptor) {
+    var fragmentCache = this._getFragment(descriptor.partial || FRAGMENT_DEFAULT)
+      , resourcePath = descriptor.path;
+
+    if (descriptor.id) {
+      if (!fragmentCache[descriptor.id]) {
+        return;
+      }
+
+      fragmentCache[descriptor.id] = undefined;
+      // Remove our-self from any collection queries we know about
+      _.each(this.queries, function(resource) {
+        if (_.isArray(resource.data)) {
+          var i = resource.data.indexOf(descriptor.id);
+          if (i !== -1) {
+            resource.data.splice(i, 1);
+          }
+        }
+      });
+    }
+    else if (resourcePath && this.queries[resourcePath]) {
+      this.queries[resourcePath] = undefined;
+    }
   },
 
   _getFragment: function(fragment) {

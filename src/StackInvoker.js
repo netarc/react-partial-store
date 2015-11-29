@@ -150,8 +150,11 @@ function updateStoreResource(store, resourceDescriptor, data, action) {
   if (action == ACTION_FETCH) {
     RPS.responseHandler.default(data, resourceDescriptor);
   }
+  else if (action == ACTION_DELETE) {
+    store.deleteResource(resourceDescriptor);
+  }
   else {
-    store.updateResource(resourceDescriptor, action, data, STATUS_SUCCESS);
+    store.updateResource(resourceDescriptor, data, STATUS_SUCCESS);
   }
 }
 
@@ -238,6 +241,7 @@ StackInvoker.Resolvers = Resolvers = {
       resource = store.fetchResource(resourceDescriptor);
     }
 
+    console.info("resource: %o", resource);
     return resource;
   }
 
@@ -259,7 +263,7 @@ StackInvoker.invoke = function(stack) {
 
   // Consume all resolve actions and settle on our final one
   for (var i = 0; i < stack.length; i++) {
-    if (resolveAction == stack[i].__resolve) {
+    if ((resolveAction = stack[i].__resolve)) {
       stack.splice(i, 1);
     }
   }

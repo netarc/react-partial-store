@@ -119,8 +119,12 @@ var Store = _.defineClass(MixinResolvable, MixinSubscribable, {
     this.fragmentMap.touch(resourceDescriptor, data);
   },
 
-  updateResource: function(resourceDescriptor, action, data, status) {
-    this.fragmentMap.update(resourceDescriptor, action, data, status);
+  updateResource: function(resourceDescriptor, data, status) {
+    this.fragmentMap.update(resourceDescriptor, data, status);
+  },
+
+  deleteResource: function(resourceDescriptor) {
+    this.fragmentMap.delete(resourceDescriptor);
   }
 });
 

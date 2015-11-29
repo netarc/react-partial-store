@@ -172,7 +172,7 @@ exports.defineClass = function() {
     }
   };
 
-  each(arguments, function(definition) {
+  each([].slice.call(arguments), function(definition) {
     extendClass(Class.prototype, definition);
   });
 

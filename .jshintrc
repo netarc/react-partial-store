@@ -1,0 +1,16 @@
+{
+  "maxerr": 50,
+
+  "curly": true,
+  "unused": true,
+  "undef": true,
+
+  "browser": true,
+  "devel": true,
+  "node": true,
+  "laxcomma": true,
+
+  "globals": {
+    "Promise":true
+  }
+}
