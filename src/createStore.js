@@ -13,6 +13,14 @@ Promise.prototype._onerror = function(err) {
   }
 };
 
+var validDefinitionKeys = [
+  "type",
+  "initialParams",
+  "uri",
+  "actions",
+  "onlyActions"
+];
+
 function validateDefinition(definition) {
   if (!_.isPlainObject(definition)) {
     throw new TypeError(
@@ -21,6 +29,14 @@ function validateDefinition(definition) {
       "the collection type."
     );
   }
+
+  _.each(definition, function(value, key) {
+    if (validDefinitionKeys.indexOf(key) == -1) {
+      throw new TypeError(
+        "createStore: Invalid definition option `" + key + "`."
+      );
+    }
+  });
 
   if (definition.type && typeof(definition.type) !== "string") {
     throw new TypeError(
@@ -128,10 +144,7 @@ var Store = _.defineClass(MixinResolvable, MixinSubscribable, {
   }
 });
 
-/**
- *
- */
-module.exports = function(type, definition) {
+function createStore(type, definition) {
   var store;
 
   if (typeof(type) !== "string") {
@@ -140,6 +153,9 @@ module.exports = function(type, definition) {
   }
 
   definition = definition || {};
+  if (!type) {
+    type = definition.type;
+  }
 
   if (type) {
     definition.type = type;
@@ -163,4 +179,7 @@ module.exports = function(type, definition) {
   }
 
   return store;
-};
+}
+createStore.prototype = Store;
+
+module.exports = createStore;

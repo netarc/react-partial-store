@@ -26,6 +26,7 @@ var anyDataset = function(names, predicate) {
 var MixinStatus = {
   isLoading: function(names) {
     return anyDataset.call(this, names, function(resource) {
+      console.info(resource);
       return resource.timestamp === TIMESTAMP_LOADING;
     });
   },

@@ -111,14 +111,10 @@ var FragmentMap = _.defineClass({
     }
 
     if (descriptor.id) {
-      if (fragmentCache[descriptor.id]) {
-        fragmentCache[descriptor.id] = _.extend(fragmentCache[descriptor.id] || {}, touch);
-      }
+      fragmentCache[descriptor.id] = _.extend(fragmentCache[descriptor.id] || {}, touch);
     }
     else if (descriptor.path) {
-      if (this.queries[descriptor.path]) {
-        this.queries[descriptor.path] = _.extend(this.queries[descriptor.path] || {}, touch);
-      }
+      this.queries[descriptor.path] = _.extend(this.queries[descriptor.path] || {}, touch);
     }
   },
 
