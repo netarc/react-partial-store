@@ -75,6 +75,28 @@ describe("createStore", function() {
           createStore({type: "foobar", barfoo: 123});
         });
       });
+
+      it("should throw an error on invalid option values", function() {
+        assert.throws(function(){
+          createStore({type: 123});
+        });
+
+        assert.throws(function(){
+          createStore({initialParams: 123});
+        });
+
+        assert.throws(function(){
+          createStore({uri: 123});
+        });
+
+        assert.throws(function(){
+          createStore({actions: []});
+        });
+
+        assert.throws(function(){
+          createStore({onlyActions: []});
+        });
+      });
     });
   });
 });

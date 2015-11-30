@@ -3,6 +3,14 @@ var RPS = require('./index')
   , MixinResolvable = require('./MixinResolvable');
 
 
+var validDefinitionKeys = [
+  "partial",
+  "fragments",
+  "uri",
+  "actions",
+  "onlyActions"
+];
+
 function validateDefinition(definition) {
   if (!_.isPlainObject(definition)) {
     throw new TypeError(
@@ -10,6 +18,14 @@ function validateDefinition(definition) {
       "A valid definition type is either a Dataset, Store or regular object."
     );
   }
+
+  _.each(definition, function(value, key) {
+    if (validDefinitionKeys.indexOf(key) == -1) {
+      throw new TypeError(
+        "createDataset: Invalid definition option `" + key + "`."
+      );
+    }
+  });
 
   // Does the definition looks like a MixinResolvable
   if (_.isFunction(definition.resolve) && _.isFunction(definition.getResolvable)) {
@@ -116,7 +132,7 @@ var Dataset = _.defineClass(MixinResolvable, {
  *
  * Accepts a single definition object or one or more resolvables.
  */
-module.exports = function() {
+ function createDataset() {
   var definitions = [].slice.call(arguments)
     , result = null;
 
@@ -139,4 +155,7 @@ module.exports = function() {
   }
 
   return new Dataset(result);
-};
+}
+createDataset.prototype = Dataset;
+
+module.exports = createDataset;
