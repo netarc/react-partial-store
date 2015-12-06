@@ -7,10 +7,17 @@ module.exports = {
   },
 
   subscribe: function(event, callback, context) {
-    _.log("MixinSubscribable", "subscribe", event);
     var aborted = false
       , self = this
       , eventHandler = null;
+
+    if (typeof(event) !== "string") {
+      throw new TypeError("MixinSubscribable:subscribe expected string event but found type `" + event + "`");
+    }
+
+    if (typeof(callback) !== "function") {
+      throw new TypeError("MixinSubscribable:subscribe expected callback but found `" + event + "`");
+    }
 
     context = context || this;
     eventHandler = function(args) {
@@ -29,7 +36,10 @@ module.exports = {
   },
 
   trigger: function(event) {
-    _.log("MixinSubscribable", "trigger", event);
+    if (typeof(event) !== "string") {
+      throw new TypeError("MixinSubscribable:trigger expected string event but found type `" + event + "`");
+    }
+
     this.emitter.emit(event);
   }
 };
