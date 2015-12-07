@@ -2,37 +2,36 @@ var _ = require('./utils');
 
 
 var unfoldStack = function(stack) {
-  var substack;
+  var results = [];
 
   for (var i = 0; i < stack.length; i++) {
-    var definition = stack[i].__definition;
-    if (!definition) {
+    var element = stack[i]
+      , definition;
+
+    // Intentionally drop invalid elements
+    if (!element) {
       continue;
     }
 
-    if (_.isArray(definition)) {
-      stack.splice(i, 1);
-
-      for (var l = 0; l < definition.length; l++) {
-        var innerDefinition = definition[l];
-        if (innerDefinition.resolve && innerDefinition.getResolvable) {
-          substack = unfoldStack(innerDefinition.resolve());
-          [].splice.apply(stack, [].concat(i, 0, substack));
-          i+= substack.length;
-        }
-        else {
-          stack.splice(i, 0, innerDefinition);
-          i++;
-        }
-      }
-      i--;
+    if (// Case 1 - Our element looks like a MixinResolvable
+        element.resolve &&
+        element.getResolvable &&
+        (definition = element.resolve()) ||
+        // Case 2 - Our element contains a definition that looks like a MixinResolvable
+        (definition = element.__definition) &&
+        definition.resolve &&
+        definition.getResolvable &&
+        (definition = definition.resolve()) ||
+        // Case 3 - Our element contains a definition that is an array
+        _.isArray(definition)) {
+      results = results.concat(unfoldStack(definition));
     }
-    else if (definition.resolve && definition.getResolvable) {
-      substack = unfoldStack(definition.resolve());
-      [].splice.apply(stack, [].concat(i, 1, substack));
+    else {
+      results.push(element);
     }
   }
-  return stack;
+
+  return results;
 };
 
 module.exports = {
