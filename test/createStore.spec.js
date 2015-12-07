@@ -39,15 +39,15 @@ describe("createStore", function() {
         assert.sameMembers(Object.keys(StoreSet), ["foobar"]);
       });
 
-      it("should return the same named store if duplicated", function() {
+      it("should throw an error a named store already exists", function() {
         assert.sameMembers(Object.keys(StoreSet), []);
         var store_1 = createStore("foobar");
         assert(store_1 instanceof createStore.prototype, "store was not instance of Store");
         assert.sameMembers(Object.keys(StoreSet), ["foobar"]);
 
-        var store_2 = createStore("foobar");
-        assert.strictEqual(store_1, store_2);
-        assert.sameMembers(Object.keys(StoreSet), ["foobar"]);
+        assert.throws(function(){
+          createStore("foobar");
+        }, TypeError, "found existing Store of");
       });
     });
 

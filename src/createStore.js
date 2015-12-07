@@ -170,7 +170,7 @@ function createStore(type, definition) {
       store.definition = definition;
     }
     else {
-      console.error("createStore: Unexpected behavior, found existing Store of collection " +
+      throw new TypeError("createStore: Unexpected behavior, found existing Store of " +
       "type `" + type + "` while trying to redefine.");
     }
   }
