@@ -18,7 +18,8 @@ var validDefinitionKeys = [
   "initialParams",
   "uri",
   "actions",
-  "onlyActions"
+  "onlyActions",
+  "idFormat"
 ];
 
 function validateDefinition(definition) {
@@ -57,6 +58,12 @@ function validateDefinition(definition) {
     );
   }
 
+  if (definition.idParam && typeof(definition.idParam) !== "string") {
+    throw new TypeError(
+      "createStore: Option `idParam` can only be of type String but found type `" + typeof(definition.idParam) + "`."
+    );
+  }
+
   if (definition.actions && !_.isPlainObject(definition.actions)) {
     throw new TypeError(
       "createStore: Option `actions` can only be of type Object but found " +
@@ -88,6 +95,8 @@ function validateDefinition(definition) {
  * Common options that Actions/Store/Datasets all share:
  * @param {String} [optional] uri A URI that will be resolve and concat with other
  *   URI's in the action chain.
+ * @param {String} [optional] idFormat A URI to be used instead of the raw URI
+ *   for identifying a resource in the Store.
  * @param {...Action} [optional] actions A list of `actions` can be provided
  *   as additional actions to be allowed to perform on data from this store.
  * @param {...Action} [optional] onlyActions A list of `actions` can be provided
