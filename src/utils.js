@@ -132,6 +132,17 @@ exports.map = function(obj, iteratee) {
   return results;
 };
 
+exports.concatUnique = function(src, values) {
+  var results = [].concat(src || []);
+  values = values || [];
+  for (var i = 0; i < values.length; i++) {
+    if (results.indexOf(values[i]) == -1) {
+      results.push(values[i]);
+    }
+  }
+  return results;
+};
+
 exports.deepCopy = deepCopy = function(obj) {
   var out
     , i

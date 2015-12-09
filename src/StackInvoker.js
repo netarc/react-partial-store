@@ -1,6 +1,6 @@
 var axios = require("axios")
-  , _ = require("./utils")
   , Constants = require("./Constants")
+  , StackReducer = require("./StackReducer")
   , RPS = require("./index")
   , STATUS_SUCCESS = Constants.status.SUCCESS
   , STATUS_STALE = Constants.status.STALE
@@ -11,135 +11,6 @@ var axios = require("axios")
   , Resolvers = null
   , StackInvoker = {};
 
-
-var composeURI = function(uri, params, paramMap) {
-  var pieces = uri.split('/');
-
-  for (var i = 0; i < pieces.length; i++) {
-    var piece = pieces[i];
-
-    if (piece[0] == ':') {
-      var key =  piece.substr(1);
-
-      if (paramMap && paramMap[key]) {
-        key = paramMap[key];
-      }
-
-      if (params[key]) {
-        pieces[i] = params[key];
-      }
-      else {
-        throw new TypeError("Failed to map path component `" + key + "` for: " + uri);
-      }
-    }
-  }
-
-  return pieces.join('/');
-};
-
-var resolveResource = function(stack) {
-  var resolvedParams = {}
-    , resolvedParamMap = {}
-    , resolvedPartial = null
-    , resolvedType = null
-    , resolvedStore = null
-    , resolvedActions = _.extend({}, RPS.actions)
-    , resolvedPath = ""
-    , resolvedFragments = []
-    , resolvedParamId = null
-    , resolvedPayload = {}
-    , i, op, definition;
-
-  // Pass 1
-  for (i = 0; i < stack.length; i++) {
-    op = stack[i];
-    definition = op.__definition;
-
-    if (definition) {
-      // Store specific resolve rules
-      if (op.__type === "store") {
-        resolvedStore = op.__reference;
-
-        if (definition.type) {
-          resolvedType = definition.type;
-        }
-      }
-
-      // Dataset specific resolve rules
-      if (op.__type === "dataset") {
-        if (definition.paramMap) {
-          resolvedParamMap = _.extend(resolvedParamMap, definition.paramMap);
-        }
-
-        if (definition.partial) {
-          resolvedPartial = definition.partial;
-        }
-
-        if (definition.fragments) {
-          resolvedFragments = resolvedFragments.concat(definition.fragments);
-        }
-      }
-
-      // Common resolve rules
-      if (definition.paramId) {
-        resolvedParamId = definition.paramId;
-      }
-
-      if (definition.onlyActions) {
-        if (!_.isPlainObject(definition.onlyActions)) {
-          throw new TypeError("onlyActions was not an object, but of type \"" + typeof definition.onlyActions + "\"");
-        }
-        resolvedActions = _.extend({}, definition.onlyActions);
-      }
-
-      if (definition.actions) {
-        if (!_.isPlainObject(definition.actions)) {
-          throw new TypeError("actions was not an object, but of type \"" + typeof definition.actions + "\"");
-        }
-        resolvedActions = _.extend(resolvedActions, definition.actions);
-      }
-    }
-    else if (op.__params) {
-      resolvedParams = _.extend(resolvedParams, op.__params);
-    }
-    else if (_.isPlainObject(op)) {
-      resolvedPayload = _.extend(resolvedPayload, op);
-    }
-  }
-
-  // Pass 2 - Since URI uses resolved params we need to do it separately
-  for (i = 0; i < stack.length; i++) {
-    op = stack[i];
-    definition = op.__definition;
-
-    if (definition) {
-      if (definition.uri) {
-        resolvedPath+= composeURI(definition.uri, resolvedParams, resolvedParamMap);
-      }
-    }
-  }
-
-  var key = resolvedParamId || "id";
-  if (resolvedParamMap[key]) {
-    key = resolvedParamMap[key];
-  }
-  resolvedParamId = resolvedParams[key];
-
-  var event = ["change"].concat(resolvedParamId || []).join(':');
-
-  return {
-    actions: resolvedActions,
-    event: event,
-    partial: resolvedPartial,
-    id: resolvedParamId,
-    params: resolvedParams,
-    fragments: resolvedFragments.reverse(),
-    path: resolvedPath,
-    payload: resolvedPayload,
-    store: resolvedStore,
-    type: resolvedType
-  };
-};
 
 /**
  * Given a known Store update a resource descriptors data and repeat with
@@ -233,6 +104,7 @@ StackInvoker.Resolvers = Resolvers = {
   // This is used to load our dataset accessor on a component, so this must return
   // a resource object instead of a promise.
   fetch: function(resourceDescriptor, stack) {
+    console.info("fetch!");
     var store = resourceDescriptor.store
       , resource = store.fetchResource(resourceDescriptor);
 
@@ -270,7 +142,7 @@ StackInvoker.invoke = function(stack) {
 
   console.groupCollapsed("StackInvoker::invoke %c%s", 'font-weight:normal;', resolveAction || "{descriptor}");
 
-  var resourceDescriptor = resolveResource(stack);
+  var resourceDescriptor = StackReducer(stack);
 
   if (!resolveAction || !resourceDescriptor.store) {
     console.groupEnd();
