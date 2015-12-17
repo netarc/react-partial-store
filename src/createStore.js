@@ -1,17 +1,10 @@
-var Promise = require("es6-promise").Promise
-  , RPS = require("./index")
+var RPS = require("./index")
   , _ = require("./utils")
   , FragmentMap = require("./FragmentMap")
   , MixinResolvable = require("./MixinResolvable")
   , MixinSubscribable = require("./MixinSubscribable")
   , StoreSet = require("./StoreSet");
 
-
-Promise.prototype._onerror = function(err) {
-  if (Object.prototype.toString.call(err) == "[object Error]") {
-    console.assert(false, err);
-  }
-};
 
 var validDefinitionKeys = [
   "type",

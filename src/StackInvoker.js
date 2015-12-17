@@ -1,4 +1,5 @@
-var axios = require("axios")
+var Promise = require("es6-promise").Promise
+  , axios = require("axios")
   , Constants = require("./Constants")
   , StackReducer = require("./StackReducer")
   , RPS = require("./index")
@@ -11,6 +12,12 @@ var axios = require("axios")
   , Resolvers = null
   , StackInvoker = {};
 
+
+Promise.prototype._onerror = function(err) {
+  if (Object.prototype.toString.call(err) == "[object Error]") {
+    console.assert(false, err);
+  }
+};
 
 /**
  * Given a known Store update a resource descriptors data and repeat with

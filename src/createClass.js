@@ -90,6 +90,8 @@ var createMixinDatasetAccessor = function(dataset, datasetKey) {
 
         if (!subscriptions[event]) {
           // TODO: Switch this to throttle/debounce
+          // TODO: We could also override render in the given component and toggle
+          // a render flag
           subscriptions[event] = resource.store.subscribe(event, function() {
             _.log("MixinDatasetAccessor", "forceRefresh");
             _.nextTick(function() {
