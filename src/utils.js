@@ -8,6 +8,7 @@ var objToString = Object.prototype.toString
   , deepCopy
   , keysFor;
 
+exports.hostname = "";
 
 exports.keysFor = keysFor = Object.keys || function(obj) {
   if (typeof(obj) !== "object") {

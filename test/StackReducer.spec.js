@@ -1,4 +1,5 @@
 var chai = require('chai')
+  , utils = require("../src/utils")
   , StackReducer = require("../src/StackReducer")
   , assert = chai.assert;
 
@@ -339,6 +340,37 @@ describe("StackReducer", function() {
 
       assert.strictEqual(result1.path, "/foo/123/bar/321");
       assert.strictEqual(result2.path, "/foo/123/bar/321");
+    });
+  });
+
+  describe("setting utils hostname", function() {
+    after(function() {
+      utils.hostname = "";
+    });
+
+    it("should affect uri", function() {
+      var result_before = StackReducer([
+          {__type: "dataset", __definition: {paramId: "foo"}},
+          {__type: "dataset", __definition: {paramMap: {foo: "bar"}}},
+          {__type: "dataset", __definition: {paramMap: {foo: "baz"}}},
+          {__type: "dataset", __definition: {uri: "/foo/:foo"}},
+          {__type: "dataset", __definition: {uri: "/bar/:bar"}},
+          {__params: {foo: 123, bar: 321, baz: 987}}
+        ]);
+
+      utils.hostname = "http://foobar.com";
+
+      var result_after = StackReducer([
+          {__type: "dataset", __definition: {paramId: "foo"}},
+          {__type: "dataset", __definition: {paramMap: {foo: "bar"}}},
+          {__type: "store", __definition: {paramMap: {foo: "baz"}}},
+          {__type: "dataset", __definition: {uri: "/foo/:foo"}},
+          {__type: "store", __definition: {uri: "/bar/:bar"}},
+          {__params: {foo: 123, bar: 321, baz: 987}}
+        ]);
+
+      assert.strictEqual(result_before.path, "/foo/987/bar/321");
+      assert.strictEqual(result_after.path, "http://foobar.com/foo/321/bar/321");
     });
   });
 });

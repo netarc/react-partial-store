@@ -116,6 +116,8 @@ module.exports = function(stack) {
     }
   }
 
+  resolvedPath = _.hostname + resolvedPath;
+
   var key = resolvedParamId || lastURIParamId || "id";
   if (resolvedParamMap[key]) {
     key = resolvedParamMap[key];
