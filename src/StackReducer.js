@@ -3,7 +3,7 @@ var _ = require("./utils")
 
 
 var fillURI = function(uri, params, paramMap) {
-  var vars = uri.match(/:(\w+)/g)
+  var vars = uri.match(/:(\w+)/g) || []
     , lastParamKey = null;
 
   for (var i = 0; i < vars.length; i++) {

@@ -328,7 +328,8 @@ describe("StackReducer", function() {
   describe("reduce definiton uri", function() {
     it("should correctly concat and resolve", function() {
       var result1 = StackReducer([
-          {__type: "dataset", __definition: {uri: "/foo/:foo"}},
+          {__type: "dataset", __definition: {uri: "/foo"}},
+          {__type: "dataset", __definition: {uri: "/:foo"}},
           {__type: "dataset", __definition: {uri: "/bar/:bar"}},
           {__params: {foo: 123, bar: 321}}
         ])
