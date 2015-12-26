@@ -9,7 +9,7 @@ function assertFragmentData(obj, key, data, partial) {
   assert.isObject(obj);
   assert.property(obj, key);
 
-  if (data) {
+  if (typeof(data) === 'object') {
     assert.deepPropertyVal(obj, key + ".status", Constants.status.SUCCESS);
     assert.deepProperty(obj, key + ".timestamp");
     assert.deepEqual(obj[key].data, data);

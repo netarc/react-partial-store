@@ -15,7 +15,7 @@ var embeddableNoContainer;
 function parseObject(object) {
   if (!_.isPlainObject(object)) {
     throw new TypeError(
-      "embeddableNoContainer:parseObject expected object type but found `" + typeof(object) + "`."
+      "embeddableNoContainer:parseObject: expected object type but found `" + typeof(object) + "`."
     );
   }
 
@@ -31,7 +31,7 @@ function parseObject(object) {
         result.partial = value;
       }
       else {
-        console.warn("embeddableNoContainer: ignoring unknown object property `" + key + "`");
+        console.warn("embeddableNoContainer:parseObject: ignoring unknown object property `" + key + "`");
       }
 
       return;
@@ -56,7 +56,7 @@ function embeddableNoContainer(data, descriptor) {
     , discoveredPartial = null;
 
   descriptor = descriptor || {};
-  console.info("embeddableNoContainer: %o | %o", data, descriptor);
+
   // collection
   if (_.isArray(data)) {
     result = [];
@@ -89,19 +89,13 @@ function embeddableNoContainer(data, descriptor) {
     }
   }
   // non-collection
-  else if (_.isPlainObject(data)) {
+  else {
     var resource = parseObject(data);
 
     result = resource.data;
     descriptor.id = result.id;
     discoveredType = resource.type;
     discoveredPartial = resource.partial;
-  }
-  else {
-    throw new Error(
-      "embeddableNoContainer: encountered an invalid object while " +
-      "parsing response of `" + typeof(data) + "`"
-    );
   }
 
   var resolvedType = descriptor.type = descriptor.type || discoveredType

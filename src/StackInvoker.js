@@ -24,7 +24,6 @@ Promise.prototype._onerror = function(err) {
  * any embedded data.
  */
 function updateStoreResource(store, resourceDescriptor, data, action) {
-  console.info("updateStoreResource: %o", resourceDescriptor);
   if (action == ACTION_FETCH) {
     RPS.responseHandler.default(data, resourceDescriptor);
   }
@@ -41,19 +40,15 @@ function hookRequest(promise, resolve, reject, resourceDescriptor, action) {
 
   promise
     .then(function(response) {
-      console.groupCollapsed("StackInvoker::hookRequest %c%s", 'font-weight:normal;color:#00aa00', action);
       var data = response && response.data || {};
 
       updateStoreResource(store, resourceDescriptor, data, action);
       resolve(response);
       store.notifyChange(resourceDescriptor);
-      console.groupEnd();
     }, function(response) {
-      console.groupCollapsed("StackInvoker::hookRequest %c%s", 'font-weight:normal;color:#ff0000;', action);
       store.touchResource(resourceDescriptor, action, {timestamp: Date.now()});
       reject(response);
       store.notifyChange(resourceDescriptor);
-      console.groupEnd();
     });
 }
 
@@ -66,7 +61,7 @@ StackInvoker.Resolvers = Resolvers = {
       if (!noNotify) {
         store.notifyChange(resourceDescriptor);
       }
-
+      console.info("axios get: %s", resourceDescriptor.path);
       var promise = axios.get(resourceDescriptor.path);
       hookRequest(promise, resolve, reject, resourceDescriptor, ACTION_FETCH);
     });
@@ -125,7 +120,6 @@ StackInvoker.Resolvers = Resolvers = {
   }
 
   // invalidate: function(resourceDescriptor) {
-  //   _.log("store", "resolveInvalidate");
 
   //   var result = this.fragmentMap.touch(resourceDescriptor, ACTION_FETCH, {
   //     status: STATUS_STALE,
@@ -147,22 +141,19 @@ StackInvoker.invoke = function(stack) {
     }
   }
 
-  console.groupCollapsed("StackInvoker::invoke %c%s", 'font-weight:normal;', resolveAction || "{descriptor}");
 
   var resourceDescriptor = StackReducer(stack);
 
   if (!resolveAction || !resourceDescriptor.store) {
-    console.groupEnd();
     return resourceDescriptor;
   }
 
   var resolver = Resolvers[resolveAction];
   if (!resolver) {
-    throw new Error("Store cannot resolve `" + resolveAction + "`");
+    throw new Error("Invoker cannot resolve `" + resolveAction + "`");
   }
 
   var result = resolver.call(Resolvers, resourceDescriptor, stack);
-  console.groupEnd();
   return result;
 };
 
