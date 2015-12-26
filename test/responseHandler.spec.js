@@ -135,7 +135,7 @@ describe("responseHandler", function() {
     });
 
     describe("when passed valid data", function() {
-      describe("of an object with no descriptor", function() {
+      describe("with no descriptor", function() {
         var projectStore
           , userStore;
 
@@ -162,8 +162,56 @@ describe("responseHandler", function() {
                                   Constants.status.SUCCESS);
         });
 
-        it("should properly add collection to Store", function() {
-          responseHandler.embeddableNoContainer([{_type: "project", id: 1, title: "foo project"}], {path: "/projects"});
+        it("should not properly add collection to Store", function() {
+          responseHandler.embeddableNoContainer([{_type: "project", id: 1, title: "foo project"}]);
+
+          expect(userStore.fragmentMap.queries)
+            .to.deep.equal({});
+          expect(userStore.fragmentMap.fragments)
+            .to.deep.equal({});
+
+          expect(projectStore.fragmentMap.queries)
+            .to.deep.equal({});
+          assertStoreFragmentData(projectStore,
+                                  DefaultPartial,
+                                  '1',
+                                  {id: 1, title: "foo project"},
+                                  null,
+                                  Constants.status.SUCCESS);
+        });
+      });
+
+      describe("with a basic descriptor", function() {
+        var projectStore
+          , userStore;
+
+        beforeEach(function() {
+          userStore = createStore("user");
+          projectStore = createStore("project");
+        });
+
+        it("should properly add object to Store", function() {
+          responseHandler.embeddableNoContainer({_type: "project", id: 1, title: "foo project"},
+                                                {path: "/projects/1"});
+
+          expect(userStore.fragmentMap.queries)
+            .to.deep.equal({});
+          expect(userStore.fragmentMap.fragments)
+            .to.deep.equal({});
+
+          expect(projectStore.fragmentMap.queries)
+            .to.deep.equal({});
+          assertStoreFragmentData(projectStore,
+                                  DefaultPartial,
+                                  '1',
+                                  {id: 1, title: "foo project"},
+                                  null,
+                                  Constants.status.SUCCESS);
+        });
+
+        it("should not properly add collection to Store", function() {
+          responseHandler.embeddableNoContainer([{_type: "project", id: 1, title: "foo project"}],
+                                                {path: "/projects"});
 
           expect(userStore.fragmentMap.queries)
             .to.deep.equal({});
