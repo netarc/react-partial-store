@@ -61,7 +61,7 @@ StackInvoker.Resolvers = Resolvers = {
       if (!noNotify) {
         store.notifyChange(resourceDescriptor);
       }
-      console.info("axios get: %s", resourceDescriptor.path);
+
       var promise = axios.get(resourceDescriptor.path);
       hookRequest(promise, resolve, reject, resourceDescriptor, ACTION_FETCH);
     });

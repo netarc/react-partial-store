@@ -3,8 +3,7 @@ var React = require("react")
   , _ = require('./utils')
   , StackInvoker = require('./StackInvoker')
   , STATUS_STALE = Constants.status.STALE
-  , TIMESTAMP_LOADING = Constants.timestamp.loading
-  , createClass = null;
+  , TIMESTAMP_LOADING = Constants.timestamp.loading;
 
 
 var anyDataset = function(names, predicate) {
@@ -143,7 +142,7 @@ var createMixinDatasetAccessor = function(dataset, datasetKey) {
  * @return {function} Component constructor function.
  * @public
  */
-createClass = function(component) {
+var createClass = function(component) {
   var mixins = component.mixins || [];
 
   _.each(component.datasets || {}, function(dataset, datasetKey) {
