@@ -19,7 +19,7 @@ describe("createStore", function() {
         assert.sameMembers(Object.keys(StoreSet), []);
         var store = createStore();
         assert(store instanceof createStore.prototype, "store was not instance of Store");
-        assert.sameMembers(Object.keys(StoreSet), []);
+        assert.sameMembers(Object.keys(StoreSet), [store.definition.type]);
       });
     });
 

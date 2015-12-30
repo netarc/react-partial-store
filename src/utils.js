@@ -191,6 +191,19 @@ exports.defineClass = function() {
   return Class;
 };
 
+exports.randomString = function(length) {
+  var str = ""
+    , min = 0
+    , max = 62;
+
+  for (var i = 0; i < length; i++) {
+    var r = Math.random() * (max - min) + min << 0;
+    r+= r > 9 ? (r < 36 ? 55 : 61) : 48;
+    str += String.fromCharCode(r);
+  }
+  return str;
+};
+
 // TODO: Temporary
 exports.log = function(zone, method, msg) {
   if (msg) {

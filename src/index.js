@@ -1,10 +1,12 @@
+var _ = require('./utils')
+  , StoreSet = require("./StoreSet");
+
+
 exports.createClass = require('./createClass');
 exports.createStore = require('./createStore');
 exports.createDataset = require('./createDataset');
 exports.prefetchCache = require('./prefetchCache');
 exports.responseHandler = require('./responseHandler');
-
-var _ = require('./utils');
 
 var defineAction = exports.defineAction = require('./defineAction');
 
@@ -46,3 +48,9 @@ exports.actions = defineActions({
     return {__resolve: "delete"};
   }
 });
+
+exports.resetStores = function() {
+  _.each(StoreSet, function(store) {
+    store.reset();
+  });
+};

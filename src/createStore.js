@@ -70,8 +70,6 @@ function validateDefinition(definition) {
       "type `" + typeof(definition.onlyActions) + "`."
     );
   }
-
-  return definition;
 }
 
 /**
@@ -98,6 +96,10 @@ function validateDefinition(definition) {
 var Store = _.defineClass(MixinResolvable, MixinSubscribable, {
   initialize: function(definition) {
     this.definition = definition;
+    this.reset();
+  },
+
+  reset: function() {
     this.fragmentMap = new FragmentMap();
   },
 
@@ -155,6 +157,8 @@ function createStore(type, definition) {
   }
 
   definition = definition || {};
+  validateDefinition(definition);
+
   if (!type) {
     type = definition.type;
   }
@@ -164,7 +168,7 @@ function createStore(type, definition) {
     store = StoreSet[type];
 
     if (!store) {
-      store = StoreSet[type] = new Store(validateDefinition(definition));
+      store = StoreSet[type] = new Store(definition);
     }
     // shadow stores typically come from prefetching when data might be assigned before stores
     // get a chance to be created; so we allow a store to be created and overided when it is a shadow.
@@ -177,7 +181,11 @@ function createStore(type, definition) {
     }
   }
   else {
-    store = new Store(validateDefinition(definition));
+    // an anonymous store still has a type for reference
+    while (StoreSet[(type = _.randomString(12))]) {}
+    definition.type = type;
+
+    store = StoreSet[type] = new Store(definition);
   }
 
   return store;
