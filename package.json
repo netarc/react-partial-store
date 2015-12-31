@@ -1,9 +1,10 @@
 {
   "name": "react-partial-store",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Another simple library for unidirectional dataflow architecture with support for fragmented (partial) data",
   "main": "index.js",
   "scripts": {
+    "test": "grunt test",
     "build": "grunt build"
   },
   "author": "Joshua Hollenbeck",
@@ -49,6 +50,6 @@
     "sinon": "^1.10.3"
   },
   "peerDependencies": {
-    "react": ">=0.12.2 <0.14.0"
+    "react": ">=0.12.2"
   }
 }
