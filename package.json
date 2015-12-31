@@ -46,7 +46,6 @@
     "matchdep": "^0.3.0",
     "mocha": "~2.2.5",
     "nock": "3.5.0",
-    "q": "^1.0.1",
     "sinon": "^1.10.3"
   },
   "peerDependencies": {

@@ -135,7 +135,7 @@ var Store = _.defineClass(MixinResolvable, MixinSubscribable, {
     return this.fragmentMap.fetch(resourceDescriptor);
   },
 
-  touchResource: function(resourceDescriptor, action, data) {
+  touchResource: function(resourceDescriptor, data) {
     this.fragmentMap.touch(resourceDescriptor, data);
   },
 

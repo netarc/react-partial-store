@@ -1,8 +1,9 @@
 var Promise = require("es6-promise").Promise
   , axios = require("axios")
+  , _ = require("./utils")
   , Constants = require("./Constants")
-  , StackReducer = require("./StackReducer")
   , RPS = require("./index")
+  , StackReducer = require("./StackReducer")
   , STATUS_SUCCESS = Constants.status.SUCCESS
   , STATUS_STALE = Constants.status.STALE
   , TIMESTAMP_LOADING = Constants.timestamp.loading
@@ -35,87 +36,75 @@ function updateStoreResource(store, resourceDescriptor, data, action) {
   }
 }
 
-function hookRequest(promise, resolve, reject, resourceDescriptor, action) {
-  var store = resourceDescriptor.store;
+function makeRequest(method, resourceDescriptor, action, touchParams, noTouchNotify) {
+  var store = resourceDescriptor.store
+    , requestConfig = {
+      method: method,
+      url: resourceDescriptor.path,
+      data: resourceDescriptor.payload
+    };
 
-  promise
-    .then(function(response) {
-      var data = response && response.data || {};
+  touchParams = _.extend({timestamp: TIMESTAMP_LOADING}, touchParams || {});
 
-      updateStoreResource(store, resourceDescriptor, data, action);
-      resolve(response);
-      store.notifyChange(resourceDescriptor);
-    }, function(response) {
-      store.touchResource(resourceDescriptor, action, {timestamp: Date.now()});
-      reject(response);
-      store.notifyChange(resourceDescriptor);
-    });
+  store.touchResource(resourceDescriptor, touchParams);
+  if (!noTouchNotify) {
+    store.notifyChange(resourceDescriptor);
+  }
+
+  return new Promise(function(resolve, reject) {
+    axios(requestConfig)
+      .then(function(response) {
+        var data = response && response.data || {};
+
+        updateStoreResource(store, resourceDescriptor, data, action);
+        resolve(response);
+        store.notifyChange(resourceDescriptor);
+      }, function(response) {
+        store.touchResource(resourceDescriptor, {timestamp: Date.now()});
+        reject(response);
+        store.notifyChange(resourceDescriptor);
+      });
+  });
 }
 
 StackInvoker.Resolvers = Resolvers = {
-  get: function(resourceDescriptor, stack, noNotify) {
-    var store = resourceDescriptor.store;
-
-    return new Promise(function(resolve, reject) {
-      store.touchResource(resourceDescriptor, ACTION_FETCH, {status: STATUS_STALE, timestamp: TIMESTAMP_LOADING});
-      if (!noNotify) {
-        store.notifyChange(resourceDescriptor);
-      }
-
-      var promise = axios.get(resourceDescriptor.path);
-      hookRequest(promise, resolve, reject, resourceDescriptor, ACTION_FETCH);
-    });
+  get: function(resourceDescriptor, noTouchNotify) {
+    return makeRequest('get',
+                       resourceDescriptor,
+                       ACTION_FETCH,
+                       {status: STATUS_STALE},
+                       noTouchNotify);
   },
 
   create: function(resourceDescriptor) {
-    var store = resourceDescriptor.store;
-
-    return new Promise(function(resolve, reject) {
-      store.touchResource(resourceDescriptor, ACTION_SAVE, {timestamp: TIMESTAMP_LOADING});
-      store.notifyChange(resourceDescriptor);
-
-      var promise = axios.post(resourceDescriptor.path, resourceDescriptor.payload);
-      hookRequest(promise, resolve, reject, resourceDescriptor, ACTION_SAVE);
-    });
+    return makeRequest('post',
+                       resourceDescriptor,
+                       ACTION_SAVE);
   },
 
   update: function(resourceDescriptor) {
-    var store = resourceDescriptor.store;
-
-    return new Promise(function(resolve, reject) {
-      store.touchResource(resourceDescriptor, ACTION_SAVE, {timestamp: TIMESTAMP_LOADING});
-      store.notifyChange(resourceDescriptor);
-
-      var promise = axios.put(resourceDescriptor.path, resourceDescriptor.payload);
-      hookRequest(promise, resolve, reject, resourceDescriptor, ACTION_SAVE);
-    });
+    return makeRequest('put',
+                       resourceDescriptor,
+                       ACTION_SAVE);
   },
 
   delete: function(resourceDescriptor) {
-    var store = resourceDescriptor.store;
-
-    return new Promise(function(resolve, reject) {
-      store.touchResource(resourceDescriptor, ACTION_DELETE, {timestamp: TIMESTAMP_LOADING});
-      store.notifyChange(resourceDescriptor);
-
-      var promise = axios.delete(resourceDescriptor.path);
-      hookRequest(promise, resolve, reject, resourceDescriptor, ACTION_DELETE);
-    });
+    return makeRequest('delete',
+                       resourceDescriptor,
+                       ACTION_DELETE);
   },
 
   // This is used to load our dataset accessor on a component, so this must return
   // a resource object instead of a promise.
-  fetch: function(resourceDescriptor, stack) {
-    console.info("fetch!");
+  fetch: function(resourceDescriptor) {
     var store = resourceDescriptor.store
       , resource = store.fetchResource(resourceDescriptor);
 
     if (!resource.data || resource.timestamp < TIMESTAMP_LOADING) {
-      this.get(resourceDescriptor, stack, true);
+      this.get(resourceDescriptor, true);
       resource = store.fetchResource(resourceDescriptor);
     }
 
-    console.info("resource: %o", resource);
     return resource;
   }
 
