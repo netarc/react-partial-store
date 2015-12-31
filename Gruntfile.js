@@ -2,7 +2,7 @@ module.exports = function(grunt) {
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
     jshint: {
-      files: ['Gruntfile.js', 'src/**/*.js', 'test/**/*.js'],
+      files: ['Gruntfile.js', 'lib/**/*.js', 'test/**/*.js'],
       options: {
         jshintrc: true
       }
@@ -14,7 +14,7 @@ module.exports = function(grunt) {
     },
     browserify: {
       dist: {
-        src: ['src/index.js'],
+        src: ['lib/index.js'],
         dest: 'dist/<%= pkg.name %>.js',
         options: {
           browserifyOptions: {

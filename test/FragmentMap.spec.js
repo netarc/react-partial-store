@@ -1,7 +1,7 @@
 var chai = require('chai')
   , assert = chai.assert
-  , Constants = require('../src/Constants')
-  , FragmentMap = require('../src/FragmentMap')
+  , Constants = require('../lib/Constants')
+  , FragmentMap = require('../lib/FragmentMap')
   , DefaultPartial = Constants.defaultFragment;
 
 

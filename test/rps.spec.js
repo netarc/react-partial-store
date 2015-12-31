@@ -1,8 +1,8 @@
 var chai = require('chai')
-  , RPS = require("../src/index")
-  , Constants = require('../src/Constants')
-  , createStore = require("../src/createStore")
-  , StoreSet = require("../src/StoreSet")
+  , RPS = require("../lib/index")
+  , Constants = require('../lib/Constants')
+  , createStore = require("../lib/createStore")
+  , StoreSet = require("../lib/StoreSet")
   , DefaultPartial = Constants.defaultFragment
   , expect = chai.expect;
 

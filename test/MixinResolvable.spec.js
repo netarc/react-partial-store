@@ -1,7 +1,7 @@
 var chai = require('chai')
   , sinon = require('sinon')
-  , _ = require('../src/utils')
-  , MixinResolvable = require("../src/MixinResolvable")
+  , _ = require('../lib/utils')
+  , MixinResolvable = require("../lib/MixinResolvable")
   , assert = chai.assert;
 
 

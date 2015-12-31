@@ -1,6 +1,6 @@
 var chai = require('chai')
-  , utils = require("../src/utils")
-  , StackReducer = require("../src/StackReducer")
+  , utils = require("../lib/utils")
+  , StackReducer = require("../lib/StackReducer")
   , assert = chai.assert;
 
 

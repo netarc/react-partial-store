@@ -1,6 +1,6 @@
 var chai = require('chai')
-  , createStore = require("../src/createStore")
-  , StoreSet = require("../src/StoreSet")
+  , createStore = require("../lib/createStore")
+  , StoreSet = require("../lib/StoreSet")
   , assert = chai.assert;
 
 

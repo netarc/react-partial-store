@@ -1,6 +1,6 @@
 var chai = require('chai')
   , sinon = require('sinon')
-  , defineAction = require("../src/defineAction")
+  , defineAction = require("../lib/defineAction")
   , assert = chai.assert;
 
 

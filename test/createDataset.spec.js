@@ -1,5 +1,5 @@
 var chai = require('chai')
-  , createDataset = require("../src/createDataset")
+  , createDataset = require("../lib/createDataset")
   , assert = chai.assert;
 
 

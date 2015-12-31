@@ -1,7 +1,7 @@
 var chai = require('chai')
   , sinon = require('sinon')
-  , _ = require('../src/utils')
-  , MixinSubscribable = require("../src/MixinSubscribable")
+  , _ = require('../lib/utils')
+  , MixinSubscribable = require("../lib/MixinSubscribable")
   , assert = chai.assert;
 
 var SubscribableClass = _.defineClass(MixinSubscribable);
