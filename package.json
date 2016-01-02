@@ -1,14 +1,14 @@
 {
   "name": "react-partial-store",
   "version": "0.1.0",
-  "description": "Another simple library for unidirectional dataflow architecture with support for fragmented (partial) data",
+  "description": "A library for unidirectional dataflow architecture with support for fragmented (partial) data",
   "files": [
     "LICENSE",
     "README.md",
     "index.js",
     "lib/"
   ],
-  "main": "index.js",
+  "main": "lib",
   "scripts": {
     "test": "grunt test",
     "build": "grunt build"
