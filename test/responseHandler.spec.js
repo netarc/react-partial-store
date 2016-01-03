@@ -63,74 +63,74 @@ function assertStoreQueryData(store, path, keys, status) {
 describe("responseHandler", function() {
   beforeEach(resetStoreSet);
 
-  describe("embeddableNoContainer", function() {
+  describe("containerless_nested", function() {
     describe("when passed invalid data", function() {
       it("should throw an error with no args", function() {
         var case1 = function() {
-            responseHandler.embeddableNoContainer();
+            responseHandler.containerless_nested();
           };
 
-        expect(case1).to.throw(Error, "embeddableNoContainer:parseObject: expected object type but found");
+        expect(case1).to.throw(Error, "containerless_nested:parseObject: expected object type but found");
       });
 
       it("should throw an error with non array/object", function() {
         var case1 = function() {
-            responseHandler.embeddableNoContainer("foobar");
+            responseHandler.containerless_nested("foobar");
           }
           , case2 = function() {
-            responseHandler.embeddableNoContainer(123);
+            responseHandler.containerless_nested(123);
           }
           , case3 = function() {
-            responseHandler.embeddableNoContainer(true);
+            responseHandler.containerless_nested(true);
           };
 
-        expect(case1).to.throw(Error, "embeddableNoContainer:parseObject: expected object type but found");
-        expect(case2).to.throw(Error, "embeddableNoContainer:parseObject: expected object type but found");
-        expect(case3).to.throw(Error, "embeddableNoContainer:parseObject: expected object type but found");
+        expect(case1).to.throw(Error, "containerless_nested:parseObject: expected object type but found");
+        expect(case2).to.throw(Error, "containerless_nested:parseObject: expected object type but found");
+        expect(case3).to.throw(Error, "containerless_nested:parseObject: expected object type but found");
       });
 
       it("should throw an error with invalid array data", function() {
         var case1 = function() {
-            responseHandler.embeddableNoContainer([1]);
+            responseHandler.containerless_nested([1]);
           }
           , case2 = function() {
-            responseHandler.embeddableNoContainer(["foo"]);
+            responseHandler.containerless_nested(["foo"]);
           };
 
-        expect(case1).to.throw(TypeError, "embeddableNoContainer:parseObject: expected object type but found");
-        expect(case2).to.throw(TypeError, "embeddableNoContainer:parseObject: expected object type but found");
+        expect(case1).to.throw(TypeError, "containerless_nested:parseObject: expected object type but found");
+        expect(case2).to.throw(TypeError, "containerless_nested:parseObject: expected object type but found");
       });
 
       it("should throw an error with empty data", function() {
         var case1 = function() {
-            responseHandler.embeddableNoContainer([]);
+            responseHandler.containerless_nested([]);
           }
           , case2 = function() {
-            responseHandler.embeddableNoContainer([{}]);
+            responseHandler.containerless_nested([{}]);
           }
           , case3 = function() {
-            responseHandler.embeddableNoContainer({});
+            responseHandler.containerless_nested({});
           };
 
-        expect(case1).to.throw(TypeError, "embeddableNoContainer: Failed to resolve data type");
-        expect(case2).to.throw(TypeError, "embeddableNoContainer: Failed to resolve data type");
-        expect(case3).to.throw(TypeError, "embeddableNoContainer: Failed to resolve data type");
+        expect(case1).to.throw(TypeError, "containerless_nested: Failed to resolve data type");
+        expect(case2).to.throw(TypeError, "containerless_nested: Failed to resolve data type");
+        expect(case3).to.throw(TypeError, "containerless_nested: Failed to resolve data type");
       });
 
       it("should throw an error with empty data and a descriptor type", function() {
         var case1 = function() {
-            responseHandler.embeddableNoContainer([], {type: "project"});
+            responseHandler.containerless_nested([], {type: "project"});
           }
           , case2 = function() {
-            responseHandler.embeddableNoContainer([{}], {type: "project"});
+            responseHandler.containerless_nested([{}], {type: "project"});
           }
           , case3 = function() {
-            responseHandler.embeddableNoContainer({}, {type: "project"});
+            responseHandler.containerless_nested({}, {type: "project"});
           };
 
-        expect(case1).to.throw(TypeError, "embeddableNoContainer: Failed to resolve store for data type");
-        expect(case2).to.throw(TypeError, "embeddableNoContainer: Failed to resolve store for data type");
-        expect(case3).to.throw(TypeError, "embeddableNoContainer: Failed to resolve store for data type");
+        expect(case1).to.throw(TypeError, "containerless_nested: Failed to resolve store for data type");
+        expect(case2).to.throw(TypeError, "containerless_nested: Failed to resolve store for data type");
+        expect(case3).to.throw(TypeError, "containerless_nested: Failed to resolve store for data type");
       });
     });
 
@@ -145,7 +145,7 @@ describe("responseHandler", function() {
         });
 
         it("should properly add object to Store", function() {
-          responseHandler.embeddableNoContainer({_type: "project", id: 1, title: "foo project"});
+          responseHandler.containerless_nested({_type: "project", id: 1, title: "foo project"});
 
           expect(userStore.fragmentMap.queries)
             .to.deep.equal({});
@@ -163,7 +163,7 @@ describe("responseHandler", function() {
         });
 
         it("should not properly add collection to Store", function() {
-          responseHandler.embeddableNoContainer([{_type: "project", id: 1, title: "foo project"}]);
+          responseHandler.containerless_nested([{_type: "project", id: 1, title: "foo project"}]);
 
           expect(userStore.fragmentMap.queries)
             .to.deep.equal({});
@@ -191,7 +191,7 @@ describe("responseHandler", function() {
         });
 
         it("should properly add object to Store", function() {
-          responseHandler.embeddableNoContainer({_type: "project", id: 1, title: "foo project"},
+          responseHandler.containerless_nested({_type: "project", id: 1, title: "foo project"},
                                                 {path: "/projects/1"});
 
           expect(userStore.fragmentMap.queries)
@@ -210,7 +210,7 @@ describe("responseHandler", function() {
         });
 
         it("should not properly add collection to Store", function() {
-          responseHandler.embeddableNoContainer([{_type: "project", id: 1, title: "foo project"}],
+          responseHandler.containerless_nested([{_type: "project", id: 1, title: "foo project"}],
                                                 {path: "/projects"});
 
           expect(userStore.fragmentMap.queries)
