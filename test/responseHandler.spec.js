@@ -199,8 +199,7 @@ describe("responseHandler", function() {
           expect(userStore.fragmentMap.fragments)
             .to.deep.equal({});
 
-          expect(projectStore.fragmentMap.queries)
-            .to.deep.equal({});
+          assertStoreQueryData(projectStore, "/projects/1", 1, Constants.status.SUCCESS);
           assertStoreFragmentData(projectStore,
                                   DefaultPartial,
                                   '1',

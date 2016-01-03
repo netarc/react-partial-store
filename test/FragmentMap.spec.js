@@ -23,6 +23,15 @@ function assertFragmentData(obj, key, data, partial) {
   }
 }
 
+function assertQueryData(obj, key, data) {
+  assert.isObject(obj);
+  assert.property(obj, key);
+
+  assert.deepPropertyVal(obj, key + ".status", Constants.status.SUCCESS);
+  assert.deepProperty(obj, key + ".timestamp");
+  assert.deepEqual(obj[key].data, data);
+}
+
 describe("FragmentMap", function() {
   describe("the update method", function() {
     var fragmentMap
@@ -154,10 +163,12 @@ describe("FragmentMap", function() {
           partial: "foobar"
         }, dataSegmentId_1, Constants.status.SUCCESS);
 
-        assert.deepEqual(fragmentMap.fragments, {foobar: {}});
+        assert.sameMembers(Object.keys(fragmentMap.fragments), ["foobar"]);
+        assert.sameMembers(Object.keys(fragmentMap.fragments.foobar), ["1"]);
+        assertFragmentData(fragmentMap.fragments.foobar, 1, dataSegmentId_1);
 
         assert.sameMembers(Object.keys(fragmentMap.queries), ["/projects/1"]);
-        assertFragmentData(fragmentMap.queries, "/projects/1", dataSegmentId_1, "foobar");
+        assertQueryData(fragmentMap.queries, "/projects/1", 1);
       });
 
       it("should properly store the data with a default partial", function() {
@@ -165,10 +176,12 @@ describe("FragmentMap", function() {
           path: "/projects/1",
         }, dataSegmentId_1, Constants.status.SUCCESS);
 
-        assert.deepEqual(fragmentMap.fragments, {full: {}});
+        assert.sameMembers(Object.keys(fragmentMap.fragments), [DefaultPartial]);
+        assert.sameMembers(Object.keys(fragmentMap.fragments[DefaultPartial]), ["1"]);
+        assertFragmentData(fragmentMap.fragments[DefaultPartial], 1, dataSegmentId_1);
 
         assert.sameMembers(Object.keys(fragmentMap.queries), ["/projects/1"]);
-        assertFragmentData(fragmentMap.queries, "/projects/1", dataSegmentId_1, DefaultPartial);
+        assertQueryData(fragmentMap.queries, "/projects/1", 1);
       });
 
       it("should properly update when updated multiple times", function() {
@@ -181,10 +194,13 @@ describe("FragmentMap", function() {
           partial: "foobar"
         }, dataSegmentId_2, Constants.status.SUCCESS);
 
-        assert.deepEqual(fragmentMap.fragments, {foobar: {}});
+        assert.sameMembers(Object.keys(fragmentMap.fragments), ["foobar"]);
+        assert.sameMembers(Object.keys(fragmentMap.fragments.foobar), ["1", "2"]);
+        assertFragmentData(fragmentMap.fragments.foobar, 1, dataSegmentId_1);
+        assertFragmentData(fragmentMap.fragments.foobar, 2, dataSegmentId_2);
 
         assert.sameMembers(Object.keys(fragmentMap.queries), ["/projects/1"]);
-        assertFragmentData(fragmentMap.queries, "/projects/1", dataSegmentId_2, "foobar");
+        assertQueryData(fragmentMap.queries, "/projects/1", 2);
       });
     });
 
@@ -334,11 +350,14 @@ describe("FragmentMap", function() {
           partial: "foobar"
         }, dataSegmentId_2, Constants.status.SUCCESS);
 
-        assert.deepEqual(fragmentMap.fragments, {foobar: {}});
+        assert.sameMembers(Object.keys(fragmentMap.fragments), ["foobar"]);
+        assert.sameMembers(Object.keys(fragmentMap.fragments.foobar), ["1", "2"]);
+        assertFragmentData(fragmentMap.fragments.foobar, 1, dataSegmentId_1);
+        assertFragmentData(fragmentMap.fragments.foobar, 2, dataSegmentId_2);
 
         assert.sameMembers(Object.keys(fragmentMap.queries), ["/projects/1", "/projects/2"]);
-        assertFragmentData(fragmentMap.queries, "/projects/1", dataSegmentId_1, "foobar");
-        assertFragmentData(fragmentMap.queries, "/projects/2", dataSegmentId_2, "foobar");
+        assertQueryData(fragmentMap.queries, "/projects/1", 1);
+        assertQueryData(fragmentMap.queries, "/projects/2", 2);
       });
 
       it("should properly store the data with a default partial", function() {
@@ -349,11 +368,14 @@ describe("FragmentMap", function() {
           path: "/projects/2",
         }, dataSegmentId_2, Constants.status.SUCCESS);
 
-        assert.deepEqual(fragmentMap.fragments, {full: {}});
+        assert.sameMembers(Object.keys(fragmentMap.fragments), [DefaultPartial]);
+        assert.sameMembers(Object.keys(fragmentMap.fragments[DefaultPartial]), ["1", "2"]);
+        assertFragmentData(fragmentMap.fragments[DefaultPartial], 1, dataSegmentId_1);
+        assertFragmentData(fragmentMap.fragments[DefaultPartial], 2, dataSegmentId_2);
 
         assert.sameMembers(Object.keys(fragmentMap.queries), ["/projects/1", "/projects/2"]);
-        assertFragmentData(fragmentMap.queries, "/projects/1", dataSegmentId_1, DefaultPartial);
-        assertFragmentData(fragmentMap.queries, "/projects/2", dataSegmentId_2, DefaultPartial);
+        assertQueryData(fragmentMap.queries, "/projects/1", 1);
+        assertQueryData(fragmentMap.queries, "/projects/2", 2);
       });
 
       it("should properly update when updated multiple times", function() {
@@ -370,11 +392,15 @@ describe("FragmentMap", function() {
           partial: "foobar"
         }, dataSegmentId_3, Constants.status.SUCCESS);
 
-        assert.deepEqual(fragmentMap.fragments, {foobar: {}});
+        assert.sameMembers(Object.keys(fragmentMap.fragments), ["foobar"]);
+        assert.sameMembers(Object.keys(fragmentMap.fragments.foobar), ["1", "2", "3"]);
+        assertFragmentData(fragmentMap.fragments.foobar, 1, dataSegmentId_1);
+        assertFragmentData(fragmentMap.fragments.foobar, 2, dataSegmentId_2);
+        assertFragmentData(fragmentMap.fragments.foobar, 3, dataSegmentId_3);
 
         assert.sameMembers(Object.keys(fragmentMap.queries), ["/projects/1", "/projects/2"]);
-        assertFragmentData(fragmentMap.queries, "/projects/1", dataSegmentId_3, "foobar");
-        assertFragmentData(fragmentMap.queries, "/projects/2", dataSegmentId_2, "foobar");
+        assertQueryData(fragmentMap.queries, "/projects/1", 3);
+        assertQueryData(fragmentMap.queries, "/projects/2", 2);
       });
     });
   });
