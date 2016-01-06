@@ -64,10 +64,14 @@ describe("responseHandler", function() {
   beforeEach(resetStoreSet);
 
   describe("containerless_nested", function() {
+    before(function() {
+      responseHandler.defaultHandler = responseHandler.handlers.containerless_nested;
+    });
+
     describe("when passed invalid data", function() {
       it("should throw an error with no args", function() {
         var case1 = function() {
-            responseHandler.containerless_nested();
+            responseHandler();
           };
 
         expect(case1).to.throw(Error, "containerless_nested:parseObject: expected object type but found");
@@ -75,13 +79,13 @@ describe("responseHandler", function() {
 
       it("should throw an error with non array/object", function() {
         var case1 = function() {
-            responseHandler.containerless_nested("foobar");
+            responseHandler("foobar");
           }
           , case2 = function() {
-            responseHandler.containerless_nested(123);
+            responseHandler(123);
           }
           , case3 = function() {
-            responseHandler.containerless_nested(true);
+            responseHandler(true);
           };
 
         expect(case1).to.throw(Error, "containerless_nested:parseObject: expected object type but found");
@@ -91,10 +95,10 @@ describe("responseHandler", function() {
 
       it("should throw an error with invalid array data", function() {
         var case1 = function() {
-            responseHandler.containerless_nested([1]);
+            responseHandler([1]);
           }
           , case2 = function() {
-            responseHandler.containerless_nested(["foo"]);
+            responseHandler(["foo"]);
           };
 
         expect(case1).to.throw(TypeError, "containerless_nested:parseObject: expected object type but found");
@@ -103,34 +107,34 @@ describe("responseHandler", function() {
 
       it("should throw an error with empty data", function() {
         var case1 = function() {
-            responseHandler.containerless_nested([]);
+            responseHandler([]);
           }
           , case2 = function() {
-            responseHandler.containerless_nested([{}]);
+            responseHandler([{}]);
           }
           , case3 = function() {
-            responseHandler.containerless_nested({});
+            responseHandler({});
           };
 
-        expect(case1).to.throw(TypeError, "containerless_nested: Failed to resolve data type");
-        expect(case2).to.throw(TypeError, "containerless_nested: Failed to resolve data type");
-        expect(case3).to.throw(TypeError, "containerless_nested: Failed to resolve data type");
+        expect(case1).to.throw(TypeError, "responseHandler: Failed to resolve data type");
+        expect(case2).to.throw(TypeError, "responseHandler: Failed to resolve data type");
+        expect(case3).to.throw(TypeError, "responseHandler: Failed to resolve data type");
       });
 
       it("should throw an error with empty data and a descriptor type", function() {
         var case1 = function() {
-            responseHandler.containerless_nested([], {type: "project"});
+            responseHandler([], {type: "project"});
           }
           , case2 = function() {
-            responseHandler.containerless_nested([{}], {type: "project"});
+            responseHandler([{}], {type: "project"});
           }
           , case3 = function() {
-            responseHandler.containerless_nested({}, {type: "project"});
+            responseHandler({}, {type: "project"});
           };
 
-        expect(case1).to.throw(TypeError, "containerless_nested: Failed to resolve store for data type");
-        expect(case2).to.throw(TypeError, "containerless_nested: Failed to resolve store for data type");
-        expect(case3).to.throw(TypeError, "containerless_nested: Failed to resolve store for data type");
+        expect(case1).to.throw(TypeError, "responseHandler: Failed to resolve store for data type");
+        expect(case2).to.throw(TypeError, "responseHandler: Failed to resolve store for data type");
+        expect(case3).to.throw(TypeError, "responseHandler: Failed to resolve store for data type");
       });
     });
 
@@ -145,7 +149,7 @@ describe("responseHandler", function() {
         });
 
         it("should properly add object to Store", function() {
-          responseHandler.containerless_nested({_type: "project", id: 1, title: "foo project"});
+          responseHandler({_type: "project", id: 1, title: "foo project"});
 
           expect(userStore.fragmentMap.queries)
             .to.deep.equal({});
@@ -163,7 +167,7 @@ describe("responseHandler", function() {
         });
 
         it("should not properly add collection to Store", function() {
-          responseHandler.containerless_nested([{_type: "project", id: 1, title: "foo project"}]);
+          responseHandler([{_type: "project", id: 1, title: "foo project"}]);
 
           expect(userStore.fragmentMap.queries)
             .to.deep.equal({});
@@ -191,8 +195,8 @@ describe("responseHandler", function() {
         });
 
         it("should properly add object to Store", function() {
-          responseHandler.containerless_nested({_type: "project", id: 1, title: "foo project"},
-                                                {path: "/projects/1"});
+          responseHandler({_type: "project", id: 1, title: "foo project"},
+                          {path: "/projects/1"});
 
           expect(userStore.fragmentMap.queries)
             .to.deep.equal({});
@@ -209,8 +213,8 @@ describe("responseHandler", function() {
         });
 
         it("should not properly add collection to Store", function() {
-          responseHandler.containerless_nested([{_type: "project", id: 1, title: "foo project"}],
-                                                {path: "/projects"});
+          responseHandler([{_type: "project", id: 1, title: "foo project"}],
+                          {path: "/projects"});
 
           expect(userStore.fragmentMap.queries)
             .to.deep.equal({});
