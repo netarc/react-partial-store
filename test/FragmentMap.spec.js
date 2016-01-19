@@ -402,6 +402,26 @@ describe("FragmentMap", function() {
         assertQueryData(fragmentMap.queries, "/projects/1", 3);
         assertQueryData(fragmentMap.queries, "/projects/2", 2);
       });
+
+      it("should properly update a collection when updated multiple times", function() {
+        fragmentMap.update({
+          path: "/projects",
+          partial: "foobar"
+        }, [dataSegmentId_1, dataSegmentId_2], Constants.status.SUCCESS);
+        fragmentMap.update({
+          path: "/projects",
+          partial: "foobar"
+        }, dataSegmentId_3, Constants.status.SUCCESS);
+
+        assert.sameMembers(Object.keys(fragmentMap.fragments), ["foobar"]);
+        assert.sameMembers(Object.keys(fragmentMap.fragments.foobar), ["1", "2", "3"]);
+        assertFragmentData(fragmentMap.fragments.foobar, 1, dataSegmentId_1);
+        assertFragmentData(fragmentMap.fragments.foobar, 2, dataSegmentId_2);
+        assertFragmentData(fragmentMap.fragments.foobar, 3, dataSegmentId_3);
+
+        assert.sameMembers(Object.keys(fragmentMap.queries), ["/projects"]);
+        assertQueryData(fragmentMap.queries, "/projects", [1, 2, 3]);
+      });
     });
   });
 
