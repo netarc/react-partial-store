@@ -9,6 +9,7 @@
   "devel": true,
   "node": true,
   "laxcomma": true,
+  "expr": true,
 
   "globals": {
     "Promise":true
