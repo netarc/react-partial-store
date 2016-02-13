@@ -1,14 +1,16 @@
 var chai = require('chai')
-  , utils = require("../lib/utils")
-  , StackReducer = require("../lib/StackReducer")
-  , assert = chai.assert;
+  , utils = require('../lib/utils')
+  /* jshint -W098 : needed to prevent circular dependency issues */
+  , RPS = require('../lib/index')
+  , StackReducer = require('../lib/StackReducer')
+  , expect = chai.expect;
 
 
 describe("StackReducer", function() {
   it("returns an expected format when invoked", function() {
     var result = StackReducer();
 
-    assert.sameMembers(Object.keys(result), [
+    expect(result).to.have.all.keys([
       "actions",
       "event",
       "partial",
@@ -32,8 +34,8 @@ describe("StackReducer", function() {
         {bar: 123, foo: "foo"}
       ]);
 
-    assert.deepEqual(result1.payload, {foo: "bar", bar: 123});
-    assert.deepEqual(result2.payload, {foo: "foo", bar: 123});
+    expect(result1.payload).to.deep.equal({foo: "bar", bar: 123});
+    expect(result2.payload).to.deep.equal({foo: "foo", bar: 123});
   });
 
   it("should correctly reduce params", function() {
@@ -46,8 +48,8 @@ describe("StackReducer", function() {
         {__params: {bar: 123, foo: "foo"}}
       ]);
 
-    assert.deepEqual(result1.params, {foo: "bar", bar: 123});
-    assert.deepEqual(result2.params, {foo: "foo", bar: 123});
+    expect(result1.params).to.deep.equal({foo: "bar", bar: 123});
+    expect(result2.params).to.deep.equal({foo: "foo", bar: 123});
   });
 
   it("should correctly reduce store reference", function() {
@@ -61,12 +63,12 @@ describe("StackReducer", function() {
       ])
       , result3 = StackReducer();
 
-    assert.strictEqual(result1.store, "store2");
-    assert.strictEqual(result1.type, "bar");
-    assert.strictEqual(result2.store, "store4");
-    assert.strictEqual(result2.type, "foo");
-    assert.isNull(result3.store);
-    assert.isNull(result3.type);
+    expect(result1.store).to.equal("store2");
+    expect(result1.type).to.equal("bar");
+    expect(result2.store).to.equal("store4");
+    expect(result2.type).to.equal("foo");
+    expect(result3.store).to.be.null;
+    expect(result3.type).to.be.null;
   });
 
   it("should correctly reduce definition partial", function() {
@@ -80,9 +82,9 @@ describe("StackReducer", function() {
       ])
       , result3 = StackReducer();
 
-    assert.strictEqual(result1.partial, "bar");
-    assert.strictEqual(result2.partial, "foo");
-    assert.isNull(result3.partial);
+    expect(result1.partial).to.equal("bar");
+    expect(result2.partial).to.equal("foo");
+    expect(result3.partial).to.be.null;
   });
 
   it("should correctly reduce definition fragments", function() {
@@ -96,9 +98,9 @@ describe("StackReducer", function() {
       ])
       , result3 = StackReducer();
 
-    assert.sameMembers(result1.fragments, ["foo", "bar", "nop"]);
-    assert.sameMembers(result2.fragments, ["foo", "nop"]);
-    assert.deepEqual(result3.fragments, []);
+    expect(result1.fragments).to.have.members(["foo", "bar", "nop"]);
+    expect(result2.fragments).to.have.members(["foo", "nop"]);
+    expect(result3.fragments).to.deep.equal([]);
   });
 
   describe("reduce definiton actions", function() {
@@ -113,7 +115,7 @@ describe("StackReducer", function() {
         ])
         , result3 = StackReducer();
 
-      assert.deepEqual(Object.keys(result1.actions), [
+      expect(result1.actions).to.have.all.keys([
         "invalidate",
         "get",
         "create",
@@ -123,25 +125,11 @@ describe("StackReducer", function() {
         "delete",
         "pull"
       ]);
-      assert.strictEqual(result1.actions.pull, 123);
-      assert.strictEqual(result1.actions.update, 321);
-      assert.strictEqual(result1.actions.delete, 456);
+      expect(result1.actions.pull).to.equal(123);
+      expect(result1.actions.update).to.equal(321);
+      expect(result1.actions.delete).to.equal(456);
 
-      assert.deepEqual(Object.keys(result2.actions), [
-        "invalidate",
-        "get",
-        "create",
-        "post",
-        "update",
-        "put",
-        "delete",
-        "pull"
-      ]);
-      assert.strictEqual(result2.actions.pull, 123);
-      assert.strictEqual(result2.actions.update, 123);
-      assert.strictEqual(result2.actions.delete, 789);
-
-      assert.sameMembers(Object.keys(result3.actions), [
+      expect(result2.actions).to.have.all.keys([
         "invalidate",
         "get",
         "create",
@@ -150,13 +138,25 @@ describe("StackReducer", function() {
         "put",
         "delete"
       ]);
-      assert.isFunction(result3.actions.invalidate);
-      assert.isFunction(result3.actions.get);
-      assert.isFunction(result3.actions.create);
-      assert.isFunction(result3.actions.post);
-      assert.isFunction(result3.actions.update);
-      assert.isFunction(result3.actions.put);
-      assert.isFunction(result3.actions.delete);
+      expect(result2.actions.update).to.equal(123);
+      expect(result2.actions.delete).to.equal(789);
+
+      expect(result3.actions).to.have.all.keys([
+        "invalidate",
+        "get",
+        "create",
+        "post",
+        "update",
+        "put",
+        "delete"
+      ]);
+      expect(result3.actions.invalidate).to.be.a('function');
+      expect(result3.actions.get).to.be.a('function');
+      expect(result3.actions.create).to.be.a('function');
+      expect(result3.actions.post).to.be.a('function');
+      expect(result3.actions.update).to.be.a('function');
+      expect(result3.actions.put).to.be.a('function');
+      expect(result3.actions.delete).to.be.a('function');
     });
 
     it("should correctly whitelist", function() {
@@ -169,35 +169,38 @@ describe("StackReducer", function() {
           {__type: "store", __definition: {actions: {delete: 789, update: 123}}},
         ]);
 
-      assert.deepEqual(Object.keys(result1.actions), [
+      expect(result1.actions).to.have.all.keys([
         "delete"
       ]);
-      assert.strictEqual(result1.actions.delete, 456);
+      expect(result1.actions.delete).to.equal(456);
 
-      assert.deepEqual(Object.keys(result2.actions), [
-        "pull",
+      expect(result2.actions).to.have.all.keys([
+        "invalidate",
+        "get",
+        "create",
+        "post",
         "update",
+        "put",
         "delete"
       ]);
-      assert.strictEqual(result2.actions.pull, 123);
-      assert.strictEqual(result2.actions.update, 123);
-      assert.strictEqual(result2.actions.delete, 789);
+      expect(result2.actions.update).to.equal(123);
+      expect(result2.actions.delete).to.equal(789);
     });
 
     it("should throw an error on invalid", function() {
-      assert.throws(function() {
+      expect(function() {
         StackReducer([
           {__type: "dataset", __definition: {actions: 123}},
           {__type: "dataset", __definition: {onlyActions: {delete: 456}}}
         ]);
-      }, TypeError, "was not an object, but of type");
+      }).to.throw(TypeError, "was not an object, but of type");
 
-      assert.throws(function() {
+      expect(function() {
         StackReducer([
           {__type: "dataset", __definition: {onlyActions: {pull: 123, update: 321}}},
           {__type: "store", __definition: {actions: "update"}}
         ]);
-      }, TypeError, "was not an object, but of type");
+      }).to.throw(TypeError, "was not an object, but of type");
     });
   });
 
@@ -214,8 +217,8 @@ describe("StackReducer", function() {
           {__params: {foo: 123, bar: 321}}
         ]);
 
-      assert.strictEqual(result1.id, "321");
-      assert.strictEqual(result2.id, "321");
+      expect(result1.id).to.equal("321");
+      expect(result2.id).to.equal("321");
     });
 
     it("should correctly merge and resolve in-valid key", function() {
@@ -230,8 +233,8 @@ describe("StackReducer", function() {
           {__params: {fooz: 123, barz: 321}}
         ]);
 
-      assert.strictEqual(result1.id, undefined);
-      assert.strictEqual(result2.id, undefined);
+      expect(result1.id).to.equal(undefined);
+      expect(result2.id).to.equal(undefined);
     });
 
     it("should correctly affect events", function() {
@@ -246,28 +249,42 @@ describe("StackReducer", function() {
           {__params: {foo: 123, bar: 321}}
         ]);
 
-      assert.strictEqual(result1.event, "change:321");
-      assert.strictEqual(result2.event, "change");
+      expect(result1.event).to.equal("change:321");
+      expect(result2.event).to.equal("change");
     });
   });
 
   describe("reduce definiton paramMap", function() {
     it("should correctly merge and resolve", function() {
-      var result1 = StackReducer([
+      it("with no scope change", function() {
+        var result = StackReducer([
           {__type: "dataset", __definition: {paramId: "foo"}},
           {__type: "dataset", __definition: {paramMap: {foo: "bar"}}},
           {__type: "dataset", __definition: {paramMap: {foo: "baz"}}},
           {__params: {foo: 123, bar: 321, baz: 987}}
-        ])
-        , result2 = StackReducer([
-          {__type: "dataset", __definition: {paramId: "foo"}},
-          {__type: "dataset", __definition: {paramMap: {foo: "bar"}}},
-          {__type: "store", __definition: {paramMap: {foo: "baz"}}},
-          {__params: {foo: 123, bar: 321, baz: 987}}
         ]);
 
-      assert.strictEqual(result1.id, "987");
-      assert.strictEqual(result2.id, "321");
+        expect(result.id).to.equal("987");
+      });
+
+      it("across a scope change", function() {
+        var result1 = StackReducer([
+            {__type: "dataset", __definition: {paramId: "foo"}},
+            {__type: "dataset", __definition: {paramMap: {foo: "bar"}}},
+            {__type: "store", __definition: {paramMap: {foo: "baz"}}},
+            {__params: {foo: 123, bar: 321, baz: 987}}
+          ])
+          , result2 = StackReducer([
+            {__type: "dataset", __definition: {paramId: "foo"}},
+            {__type: "dataset", __definition: {paramMap: {foo: "bar"}}},
+            {__type: "store", __definition: {paramMap: {foo: "baz"}}},
+            {__type: "dataset", __definition: {paramId: "foo"}},
+            {__params: {foo: 123, bar: 321, baz: 987}}
+          ]);
+
+        expect(result1.id).to.equal(undefined);
+        expect(result2.id).to.equal(123);
+      });
     });
 
     it("should affect uri", function() {
@@ -288,8 +305,8 @@ describe("StackReducer", function() {
           {__params: {foo: 123, bar: 321, baz: 987}}
         ]);
 
-      assert.strictEqual(result1.path, "/foo/987/bar/321");
-      assert.strictEqual(result2.path, "/foo/321/bar/321");
+      expect(result1.path).to.equal("/foo/987/bar/321");
+      expect(result2.path).to.equal("/foo/321/bar/321");
     });
   });
 
@@ -304,8 +321,8 @@ describe("StackReducer", function() {
           {__type: "store", __definition: {partial: "bar"}}
         ]);
 
-      assert.strictEqual(result1.partial, "bar");
-      assert.strictEqual(result2.partial, "foo");
+      expect(result1.partial).to.equal("bar");
+      expect(result2.partial).to.equal("foo");
     });
   });
 
@@ -320,8 +337,8 @@ describe("StackReducer", function() {
           {__type: "store", __definition: {fragments: ["bar"]}}
         ]);
 
-      assert.deepEqual(result1.fragments, ["baz", "bar", "foo"]);
-      assert.deepEqual(result2.fragments, ["bar", "foo"]);
+      expect(result1.fragments).to.deep.equal(["baz", "bar", "foo"]);
+      expect(result2.fragments).to.deep.equal(["bar", "foo"]);
     });
   });
 
@@ -339,8 +356,8 @@ describe("StackReducer", function() {
           {__params: {foo: 123, bar: 321}}
         ]);
 
-      assert.strictEqual(result1.path, "/foo/123/bar/321");
-      assert.strictEqual(result2.path, "/foo/123/bar/321");
+      expect(result1.path).to.equal("/foo/123/bar/321");
+      expect(result2.path).to.equal("/foo/123/bar/321");
     });
   });
 
@@ -370,8 +387,8 @@ describe("StackReducer", function() {
           {__params: {foo: 123, bar: 321, baz: 987}}
         ]);
 
-      assert.strictEqual(result_before.path, "/foo/987/bar/321");
-      assert.strictEqual(result_after.path, "http://foobar.com/foo/321/bar/321");
+      expect(result_before.path).to.equal("/foo/987/bar/321");
+      expect(result_after.path).to.equal("http://foobar.com/foo/321/bar/321");
     });
   });
 });

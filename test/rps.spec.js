@@ -1,8 +1,7 @@
 var chai = require('chai')
-  , RPS = require("../lib/index")
+  , RPS = require('../lib/index')
   , Constants = require('../lib/Constants')
-  , createStore = require("../lib/createStore")
-  , StoreSet = require("../lib/StoreSet")
+  , StoreSet = require('../lib/StoreSet')
   , DefaultPartial = Constants.defaultFragment
   , expect = chai.expect;
 
@@ -38,13 +37,13 @@ describe("RPS", function() {
       , store2;
 
     beforeEach(function() {
-      store1 = createStore();
+      store1 = RPS.createStore();
       store1.updateResource({
         path: "/projects",
         partial: "foobar"
       }, [dataSegmentId_1, dataSegmentId_2], Constants.status.SUCCESS);
 
-      store2 = createStore();
+      store2 = RPS.createStore();
       store2.updateResource({
         path: "/projects"
       }, [dataSegmentId_3, dataSegmentId_4], Constants.status.SUCCESS);

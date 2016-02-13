@@ -1,11 +1,11 @@
-var Promise = require("es6-promise").Promise
+var Promise = require('es6-promise').Promise
   , chai = require('chai')
   , sinon = require('sinon')
   , nock = require('nock')
-  , RPS = require("../lib/index")
+  , RPS = require('../lib/index')
   , Constants = require('../lib/Constants')
-  , StackInvoker = require("../lib/StackInvoker")
-  , Utils = require("../lib/utils")
+  , StackInvoker = require('../lib/StackInvoker')
+  , Utils = require('../lib/utils')
   , expect = chai.expect
   , DefaultPartial = Constants.defaultFragment
   , APIServer = "http://api.rps.com";

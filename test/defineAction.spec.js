@@ -1,6 +1,6 @@
 var chai = require('chai')
   , sinon = require('sinon')
-  , defineAction = require("../lib/defineAction")
+  , RPS = require('../lib/index')
   , assert = chai.assert;
 
 
@@ -8,11 +8,11 @@ describe("defineAction", function() {
   describe("when passed invalid arguments", function() {
     it("should properly throw an error", function() {
       assert.throws(function(){
-        defineAction(123);
+        RPS.defineAction(123);
       }, TypeError, "Only accepts a callback method and/or options but found type");
 
       assert.throws(function(){
-        defineAction(123, "foobar");
+        RPS.defineAction(123, "foobar");
       }, TypeError, "attempting to pass multiple callbacks");
     });
   });
@@ -20,7 +20,7 @@ describe("defineAction", function() {
   describe("when invoked", function() {
     it("should invoke the wrapped method", function() {
       var callback = sinon.spy()
-        , action = defineAction(callback);
+        , action = RPS.defineAction(callback);
 
       assert.equal(callback.callCount, 0);
       action();
@@ -28,7 +28,7 @@ describe("defineAction", function() {
     });
 
     it("should return the result of the wrapped method", function() {
-      var action = defineAction(function() {
+      var action = RPS.defineAction(function() {
           return "foobar";
         });
 
@@ -36,7 +36,7 @@ describe("defineAction", function() {
     });
 
     it("should return any arguments passed in result of the wrapped method", function() {
-      var action = defineAction(function() {
+      var action = RPS.defineAction(function() {
           return "foobar";
         });
 
@@ -47,14 +47,14 @@ describe("defineAction", function() {
 
   describe("implements MixinResolvable", function() {
     it("should look like it", function() {
-      var action = defineAction(function() {});
+      var action = RPS.defineAction(function() {});
 
       assert.typeOf(action.getResolvable, "function");
       assert.typeOf(action.resolve, "function");
     });
 
     it("should resolve the wrapped method", function() {
-      var action = defineAction(function() {
+      var action = RPS.defineAction(function() {
         return "foobar";
       });
 
@@ -64,7 +64,7 @@ describe("defineAction", function() {
 
   describe("can be hooked", function() {
     it("should correctly hook results", function() {
-      var action1 = defineAction(function() {
+      var action1 = RPS.defineAction(function() {
             return "foobar";
           })
         , action2 = action1.hook(function() {
@@ -82,7 +82,7 @@ describe("defineAction", function() {
             assert.deepEqual(stack, ["foobar"]);
             return "barfoo";
           })
-        , action1 = defineAction(function() {
+        , action1 = RPS.defineAction(function() {
             return "foobar";
           })
         , action2 = action1.wrap(callback);

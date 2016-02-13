@@ -1,8 +1,7 @@
 var chai = require('chai')
+  , RPS = require('../lib/index')
   , Constants = require('../lib/Constants')
-  , createStore = require("../lib/createStore")
-  , responseHandler = require("../lib/responseHandler")
-  , StoreSet = require("../lib/StoreSet")
+  , StoreSet = require('../lib/StoreSet')
   , expect = chai.expect
   , DefaultPartial = Constants.defaultFragment;
 
@@ -65,13 +64,13 @@ describe("responseHandler", function() {
 
   describe("containerless_nested", function() {
     before(function() {
-      responseHandler.defaultHandler = responseHandler.handlers.containerless_nested;
+      RPS.responseHandler.defaultHandler = RPS.responseHandler.handlers.containerless_nested;
     });
 
     describe("when passed invalid data", function() {
       it("should throw an error with no args", function() {
         var case1 = function() {
-            responseHandler();
+            RPS.responseHandler();
           };
 
         expect(case1).to.throw(Error, "containerless_nested:parseObject: expected object type but found");
@@ -79,13 +78,13 @@ describe("responseHandler", function() {
 
       it("should throw an error with non array/object", function() {
         var case1 = function() {
-            responseHandler("foobar");
+            RPS.responseHandler("foobar");
           }
           , case2 = function() {
-            responseHandler(123);
+            RPS.responseHandler(123);
           }
           , case3 = function() {
-            responseHandler(true);
+            RPS.responseHandler(true);
           };
 
         expect(case1).to.throw(Error, "containerless_nested:parseObject: expected object type but found");
@@ -95,10 +94,10 @@ describe("responseHandler", function() {
 
       it("should throw an error with invalid array data", function() {
         var case1 = function() {
-            responseHandler([1]);
+            RPS.responseHandler([1]);
           }
           , case2 = function() {
-            responseHandler(["foo"]);
+            RPS.responseHandler(["foo"]);
           };
 
         expect(case1).to.throw(TypeError, "containerless_nested:parseObject: expected object type but found");
@@ -107,13 +106,13 @@ describe("responseHandler", function() {
 
       it("should throw an error with empty data", function() {
         var case1 = function() {
-            responseHandler([]);
+            RPS.responseHandler([]);
           }
           , case2 = function() {
-            responseHandler([{}]);
+            RPS.responseHandler([{}]);
           }
           , case3 = function() {
-            responseHandler({});
+            RPS.responseHandler({});
           };
 
         expect(case1).to.throw(TypeError, "responseHandler: Failed to resolve data type");
@@ -123,13 +122,13 @@ describe("responseHandler", function() {
 
       it("should throw an error with empty data and a descriptor type", function() {
         var case1 = function() {
-            responseHandler([], {type: "project"});
+            RPS.responseHandler([], {type: "project"});
           }
           , case2 = function() {
-            responseHandler([{}], {type: "project"});
+            RPS.responseHandler([{}], {type: "project"});
           }
           , case3 = function() {
-            responseHandler({}, {type: "project"});
+            RPS.responseHandler({}, {type: "project"});
           };
 
         expect(case1).to.throw(TypeError, "responseHandler: Failed to resolve store for data type");
@@ -144,12 +143,12 @@ describe("responseHandler", function() {
           , userStore;
 
         beforeEach(function() {
-          userStore = createStore("user");
-          projectStore = createStore("project");
+          userStore = RPS.createStore("user");
+          projectStore = RPS.createStore("project");
         });
 
         it("should properly add object to Store", function() {
-          responseHandler({_type: "project", id: 1, title: "foo project"});
+          RPS.responseHandler({_type: "project", id: 1, title: "foo project"});
 
           expect(userStore.fragmentMap.queries)
             .to.deep.equal({});
@@ -167,7 +166,7 @@ describe("responseHandler", function() {
         });
 
         it("should not properly add collection to Store", function() {
-          responseHandler([{_type: "project", id: 1, title: "foo project"}]);
+          RPS.responseHandler([{_type: "project", id: 1, title: "foo project"}]);
 
           expect(userStore.fragmentMap.queries)
             .to.deep.equal({});
@@ -190,12 +189,12 @@ describe("responseHandler", function() {
           , userStore;
 
         beforeEach(function() {
-          userStore = createStore("user");
-          projectStore = createStore("project");
+          userStore = RPS.createStore("user");
+          projectStore = RPS.createStore("project");
         });
 
         it("should properly add object to Store", function() {
-          responseHandler({_type: "project", id: 1, title: "foo project"},
+          RPS.responseHandler({_type: "project", id: 1, title: "foo project"},
                           {path: "/projects/1"});
 
           expect(userStore.fragmentMap.queries)
@@ -213,7 +212,7 @@ describe("responseHandler", function() {
         });
 
         it("should not properly add collection to Store", function() {
-          responseHandler([{_type: "project", id: 1, title: "foo project"}],
+          RPS.responseHandler([{_type: "project", id: 1, title: "foo project"}],
                           {path: "/projects"});
 
           expect(userStore.fragmentMap.queries)
