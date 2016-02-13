@@ -53,15 +53,15 @@ Short of the Actions, Datasets, Stores, Components already referenced above; the
 
 ##### Resource
 
-Resource refers to objects stored in a Store. Actions perform upon Resources or Datasets. Datasets represent a sub-set of Resources through a Store.
+Resource refers to objects stored in a Store. Actions perform upon Resources ultimately even though they follow the stack chain through a Dataset.
 
 ##### Stack
 
-The stack refers to the flow of an Action or Dataset up its parental chain until it reaches a Dataset or Store with no parent. This concept is important because Datasets & Stores are typically built upon each other in a given application.
+The stack refers to the flow of an Action through a Dataset up its parental chain until it reaches a Dataset or Store with no parent. This concept is important because Datasets & Stores are typically built upon each other in a given application.
 
 ##### Resolve
 
-Referencing the Stack, Resolving is the act of collapsing the Stack into a representation of a given Resource or Action. As the Stack resolves, items at the front of the stack will take higher priority than ones at the end and options for each item either concatenate or override each-other as the stack resolves. When an Action finally gets to the Store there will be a clear representation of how that resource should be accessed.
+Referencing the Stack, Resolving is the act of collapsing the Stack into a representation of a given Resource or Action upon a Resource. As the Stack resolves, items at the front of the stack will take higher priority than ones at the end and options for each item either concatenate or override each-other as the stack resolves. When an Action finally gets to the Store there will be a clear representation of how that resource should be accessed.
 
 ## Usage
 
@@ -80,7 +80,6 @@ Above is as dry as it gets. Stores can be further configured with the following 
 Name | Type | Required | Description
 -----|------|----------|------------
 type | string | no | The unique name representing the objects in this Store. When no-name is provided it will be considered an anonymous Store.
-uri | string | no | A URI that will be resolved and concatenated with other URI's in the stack. Component params may be referenced in the URI by doing `:paramName`.
 actions | object | no | An object depicting accessor names and action values that will be provided to the Component referencing this Store. This list of actions will be concatenated with other Actions as the stack is resolved.
 onlyActions | object | no | An object depicting accessor names and action values that will whitelist any Actions found later in the stack.
 
