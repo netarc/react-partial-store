@@ -1,16 +1,10 @@
 var chai = require('chai')
   , RPS = require('../lib/index')
   , Constants = require('../lib/Constants')
-  , StoreSet = require('../lib/StoreSet')
+  , testHelper = require('./testHelper')
   , DefaultPartial = Constants.defaultFragment
   , expect = chai.expect;
 
-
-function resetStoreSet() {
-  for (var key in StoreSet) {
-    delete StoreSet[key];
-  }
-}
 
 var dataSegmentId_1 = {
     id: 1,
@@ -30,7 +24,7 @@ var dataSegmentId_1 = {
   };
 
 describe("RPS", function() {
-  beforeEach(resetStoreSet);
+  afterEach(testHelper.deleteStores);
 
   describe("resetStores", function() {
     var store1

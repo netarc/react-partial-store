@@ -1,16 +1,10 @@
 var chai = require('chai')
   , RPS = require('../lib/index')
   , Constants = require('../lib/Constants')
-  , StoreSet = require('../lib/StoreSet')
+  , testHelper = require('./testHelper')
   , expect = chai.expect
   , DefaultPartial = Constants.defaultFragment;
 
-
-function resetStoreSet() {
-  for (var key in StoreSet) {
-    delete StoreSet[key];
-  }
-}
 
 function assertStoreFragmentData(store, fragment, key, data, partial, status) {
   expect(store.fragmentMap).to.be.a('object')
@@ -60,7 +54,7 @@ function assertStoreQueryData(store, path, keys, status) {
 }
 
 describe("responseHandler", function() {
-  beforeEach(resetStoreSet);
+  afterEach(testHelper.deleteStores);
 
   describe("containerless_nested", function() {
     before(function() {

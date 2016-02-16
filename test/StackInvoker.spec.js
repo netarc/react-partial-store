@@ -6,6 +6,7 @@ var Promise = require('es6-promise').Promise
   , Constants = require('../lib/Constants')
   , StackInvoker = require('../lib/StackInvoker')
   , Utils = require('../lib/utils')
+  , testHelper = require('./testHelper')
   , expect = chai.expect
   , DefaultPartial = Constants.defaultFragment
   , APIServer = "http://api.rps.com";
@@ -45,25 +46,24 @@ function assertFragmentData(obj, key, data, partial, status) {
   }
 }
 
-var ProjectsStore = RPS.createStore({
-  type: "projects"
-});
-
-var ProjectsDataset = ProjectsStore.createDataset({
-  uri: "/projects"
-});
-
-var ProjectDataset = ProjectsDataset.createDataset({
-  uri: "/:projectId",
-  fragments: ["minimal"]
-});
-
-var dataSegmentId_1 = {
-  id: 1,
-  title: "Foo Project"
-};
-
 describe("StackInvoker", function() {
+  var ProjectsStore = RPS.createStore({
+    type: "projects"
+  });
+
+  var ProjectsDataset = ProjectsStore.createDataset({
+    uri: "/projects"
+  });
+
+  var ProjectDataset = ProjectsDataset.createDataset({
+    uri: "/:projectId",
+    fragments: ["minimal"]
+  });
+
+  var dataSegmentId_1 = {
+    id: 1,
+    title: "Foo Project"
+  };
   var nockServer;
 
   before(function() {
@@ -77,6 +77,7 @@ describe("StackInvoker", function() {
   after(function() {
     Utils.hostname = "";
     nock.restore();
+    testHelper.deleteStores();
   });
 
   afterEach(function() {

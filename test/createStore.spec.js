@@ -1,18 +1,13 @@
 var chai = require('chai')
   , RPS = require('../lib/index')
   , StoreSet = require("../lib/StoreSet")
+  , testHelper = require('./testHelper')
   , assert = chai.assert;
 
 
-function resetStoreSet() {
-  for (var key in StoreSet) {
-    delete StoreSet[key];
-  }
-}
-
 describe("createStore", function() {
   describe("when invoked", function() {
-    beforeEach(resetStoreSet);
+    afterEach(testHelper.deleteStores);
 
     describe("with no arguments", function() {
       it("should create an anonymous store", function() {
