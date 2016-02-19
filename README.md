@@ -32,6 +32,7 @@ By forcing the data-flow to be in a single direction, it will be easier to follo
      - [Actions](#creating-actions)
      - [Component](#component-usage)
 - [Advanced Usage](#advanced-usage)
+     - [Dataset Subsets](#dataset-subsets)
      - [Partials](#partials)
      - [Embedded Data](#embedded-data)
 
@@ -80,8 +81,6 @@ Above is as dry as it gets. Stores can be further configured with the following 
 Name | Type | Required | Description
 -----|------|----------|------------
 type | string | no | The unique name representing the objects in this Store. When no-name is provided it will be considered an anonymous Store.
-actions | object | no | An object depicting accessor names and action values that will be provided to the Component referencing this Store. This list of actions will be concatenated with other Actions as the stack is resolved.
-onlyActions | object | no | An object depicting accessor names and action values that will whitelist any Actions found later in the stack.
 
 [Back to top](#content)
 
@@ -97,12 +96,18 @@ var ProjectsDataset = ProjectsStore.createDataset({
 });
 ```
 
-Datasets can be chained as seen below.
+If a Store is only used once in the overall scope you can use the shorthand method of creating a Dataset off a Store such as:
 
 ```javascript
-var ProjectsStore = RPS.createStore("projects");
+var ProjectsDataset = RPS.createStore("projects", {
+  uri: "/projects"
+});
+```
 
-var ProjectsDataset = ProjectsStore.createDataset({
+Datasets can also be chained as seen below.
+
+```javascript
+var ProjectsDataset = RPS.createStore("projects", {
   uri: "/projects"
 });
 
@@ -276,9 +281,68 @@ You may have also noticed that the `.delete` action (any action through a React 
 
 You will also see one of several helper methods for components in use via `this.isLoading()`, this will check all datasets to see if any are actively waiting for data.
 
+If you want to further modify a Dataset solely for use in the component but don't want to create a new external dataset, you can also pass the `datasetConfig` object on the Component and then specify the dataset you wish to config along with an options object that accepts all options a Dataset normally would accept.
+
+For example:
+
+```javascript
+var ComponentProjectsList = RPS.createClass({
+  datasets: {
+    projects: ProjectsDataset
+  },
+  datasetConfig: {
+    projects: {
+      onlyActions: {}
+    }
+  }
+  render: function() {
+    ...
+  }
+});
+```
+
 [Back to top](#content)
 
 ## Advanced Usage
+
+### Dataset Subsets
+
+While we saw how Datasets can be chained off each other, this hierarchy is often needed to be easily referenced at each point along it. One approach could be to manually build/store references to each Dataset or you can make use of Dataset Subsets.
+
+Subsets allow you to add a Dataset to an existing Dataset as a subset via a literal reference instead of just creating a Dataset that parental references another. As an example:
+
+```javascript
+var Projects = RPS.createStore("projects", {
+  uri: "/projects"
+});
+
+Projects.addDataset("project", {
+  uri: "/:projectId",
+  paramId: "projectId"
+});
+
+...
+
+var ComponentProjectShow = RPS.createClass({
+  datasets: {
+    project: Projects.project
+  },
+  render: function() {
+    ...
+  }
+});
+
+var ComponentProjectsList = RPS.createClass({
+  datasets: {
+    projects: Projects
+  },
+  render: function() {
+    ...
+  }
+});
+```
+
+This allows greater Dataset re-usability componed with the need to maintain references to various Datasets across the application.
 
 ### Partials
 
