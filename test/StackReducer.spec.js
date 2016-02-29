@@ -116,7 +116,6 @@ describe("StackReducer", function() {
         , result3 = StackReducer();
 
       expect(result1.actions).to.have.all.keys([
-        "invalidate",
         "get",
         "create",
         "post",
@@ -130,7 +129,6 @@ describe("StackReducer", function() {
       expect(result1.actions.delete).to.equal(456);
 
       expect(result2.actions).to.have.all.keys([
-        "invalidate",
         "get",
         "create",
         "post",
@@ -142,7 +140,6 @@ describe("StackReducer", function() {
       expect(result2.actions.delete).to.equal(789);
 
       expect(result3.actions).to.have.all.keys([
-        "invalidate",
         "get",
         "create",
         "post",
@@ -150,7 +147,6 @@ describe("StackReducer", function() {
         "put",
         "delete"
       ]);
-      expect(result3.actions.invalidate).to.be.a('function');
       expect(result3.actions.get).to.be.a('function');
       expect(result3.actions.create).to.be.a('function');
       expect(result3.actions.post).to.be.a('function');
@@ -175,7 +171,6 @@ describe("StackReducer", function() {
       expect(result1.actions.delete).to.equal(456);
 
       expect(result2.actions).to.have.all.keys([
-        "invalidate",
         "get",
         "create",
         "post",

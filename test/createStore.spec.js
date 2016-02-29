@@ -1,14 +1,25 @@
 var chai = require('chai')
+  , sinon = require('sinon')
   , RPS = require('../lib/index')
+  , Constants = require('../lib/Constants')
   , StoreSet = require("../lib/StoreSet")
   , testHelper = require('./testHelper')
   , expect = chai.expect;
 
 
-describe("createStore", function() {
-  describe("when invoked", function() {
-    afterEach(testHelper.deleteStores);
+var dataSegmentId_1 = {
+    id: 1,
+    title: "Foo Project"
+  }
+  , dataSegmentId_2 = {
+    id: 2,
+    title: "Bar Project"
+  };
 
+describe("Store", function() {
+  afterEach(testHelper.deleteStores);
+
+  describe("creation with createStore", function() {
     describe("with no arguments", function() {
       it("should create an anonymous store", function() {
         var result = RPS.createStore();
@@ -88,6 +99,77 @@ describe("createStore", function() {
         expect(function() {
           RPS.createStore({onlyActions: []});
         }).to.not.throw(Error);
+      });
+    });
+  });
+
+  describe("methods", function() {
+    describe("reset", function() {
+      it("should properly reset the fragment map by assigning a new instance", function() {
+        var store = RPS.createStore("foobar")
+          , fragmentMap = store.fragmentMap;
+
+        store.updateResource({
+          path: "/projects"
+        }, [dataSegmentId_1, dataSegmentId_2], Constants.status.SUCCESS);
+        store.reset();
+
+        expect(store.fragmentMap).to.not.equal(fragmentMap);
+        expect(store.fragmentMap.fragments).to.deep.equal({});
+      });
+    });
+
+    describe("invalidate", function() {
+      it("should properly mark data as stale", function() {
+        var store = RPS.createStore("foobar");
+
+        store.updateResource({
+          path: "/projects"
+        }, [dataSegmentId_1, dataSegmentId_2], Constants.status.SUCCESS);
+
+        expect(store.fetchResource({id: 1}).status).to.not.equal(Constants.status.STALE);
+        expect(store.fetchResource({id: 2}).status).to.not.equal(Constants.status.STALE);
+        expect(store.fetchResource({id: 1}).timestamp).to.not.equal(Constants.timestamp.stale);
+        expect(store.fetchResource({id: 2}).timestamp).to.not.equal(Constants.timestamp.stale);
+
+        store.invalidate();
+
+        expect(store.fetchResource({id: 1}).status).to.equal(Constants.status.STALE);
+        expect(store.fetchResource({id: 2}).status).to.equal(Constants.status.STALE);
+        expect(store.fetchResource({id: 1}).timestamp).to.equal(Constants.timestamp.stale);
+        expect(store.fetchResource({id: 2}).timestamp).to.equal(Constants.timestamp.stale);
+      });
+
+      it("should not trigger when not specified to", function() {
+        var store = RPS.createStore("foobar")
+          , callback = sinon.spy()
+          , dispose;
+
+        store.updateResource({
+          path: "/projects"
+        }, [dataSegmentId_1, dataSegmentId_2], Constants.status.SUCCESS);
+
+        dispose = store.subscribe("change", callback);
+        store.invalidate();
+        dispose();
+
+        expect(callback.callCount).to.equal(0);
+      });
+
+      it("should trigger when specified to", function() {
+        var store = RPS.createStore("foobar")
+          , callback = sinon.spy()
+          , dispose;
+
+        store.updateResource({
+          path: "/projects"
+        }, [dataSegmentId_1, dataSegmentId_2], Constants.status.SUCCESS);
+
+        dispose = store.subscribe("change", callback);
+        store.invalidate({notify: true});
+        dispose();
+
+        expect(callback.callCount).to.equal(1);
       });
     });
   });
