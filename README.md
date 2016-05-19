@@ -1,3 +1,7 @@
+# Depecration Notice
+
+This library has been succeeded by a v2 concept re-write: https://github.com/netarc/refrax
+
 # React Partial Store (RPS)
 
 Another simple library for unidirectional dataflow architecture with support for fragmented (partial) data. Inspired by collaboration with [sarahhenkens](https://github.com/sarahhenkens) and [omab](https://github.com/omab) and similar libraries.
